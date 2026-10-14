@@ -635,21 +635,21 @@ const DETAILED_UNIV_DB = [
   // --- 국공립 최상위 ---
   {
     id: 1, group: 'nat_top', univ: '도쿄대학', dept: '문과1류 (법학부)', track: '문과', field: '법정',
-    minJ: 349, safeJ: 362, maxJ: 374, totCut: 710,
+    minJ: 349, safeJ: 370, maxJ: 374, totCut: 730,
     otherReqText: '종합과목 190~198점 / 수학1 160~195점 / 기술 45+ / TOEFL iBT 100~110+',
     examType: '1차 EJU+토플 서류선발 → 2차 소논문 및 심층 면접',
     samples: '24년 합격자: 일어 374 / 기술 50 / 종과 196 / 수1 143 / iBT 100'
   },
   {
     id: 2, group: 'nat_top', univ: '도쿄대학', dept: '문과2류 (경제학부)', track: '문과', field: '상경',
-    minJ: 316, safeJ: 358, maxJ: 365, totCut: 705,
+    minJ: 330, safeJ: 370, maxJ: 365, totCut: 725,
     otherReqText: '종합과목 185~198점 / 수학1 170~195점 (수학 비중 절대적) / TOEFL 95+',
     examType: '1차 서류심사 → 2차 종합소논문 및 면접',
     samples: '24년 합격자 A: 일어 365 / 기술 50 / 종과 198 / 수1 151 / iBT 108 | B: 일어 316 / 종과 195 / 수1 181 / iBT 109'
   },
   {
     id: 3, group: 'nat_top', univ: '도쿄대학', dept: '문과3류 (문학부 · 교양학부)', track: '문과', field: '인문',
-    minJ: 355, safeJ: 368, maxJ: 374, totCut: 700,
+    minJ: 355, safeJ: 368, maxJ: 374, totCut: 720,
     otherReqText: '종합과목 190~198점 / 수학1 160+ / 기술 45~50점 / TOEFL 105+',
     examType: '1차 서류선발 → 2차 외국어·어학 관련 심층 구술면접 및 논술',
     samples: '24년 합격자: 일어 374 / 기술 45 / 종과 193 / 수1 195 / iBT 113'
@@ -753,7 +753,7 @@ const DETAILED_UNIV_DB = [
     samples: '24년 합격자: 일어 329 / 기술 45 / 종과 195 / 수1 153 / iBT 86'
   },
 
-  // --- 와세다 / 게이오 (조케이 개별 학과 분리) ---
+  // --- 와세다 / 게이오 (소케이 개별 학과 분리) ---
   {
     id: 18, group: 'top_priv', univ: '와세다대학', dept: '정치경제학부 (경제학과)', track: '문과', field: '상경',
     minJ: 335, safeJ: 352, maxJ: 369, totCut: 685,
@@ -1299,7 +1299,7 @@ function calcScores() {
 
   const pct = j400>=370?'상위 0.4%':j400>=360?'상위 1.5%':j400>=350?'상위 3.5%':j400>=340?'상위 6.0%':j400>=330?'상위 8.9%':j400>=320?'상위 11.7%':j400>=300?'상위 18.2%':j400>=280?'상위 24.8%':j400>=260?'상위 33.1%':j400>=235?'상위 47%':'평균 미만';
   document.getElementById('kpi-pct').textContent = pct;
-  document.getElementById('kpi-tier-badge').textContent = j400>=355?'도쿄·교토·조케이 최상위':j400>=338?'구제국·조케이·상위MARCH':j400>=318?'MARCH·칸칸도리츠 안정':j400>=285?'닛토·산킨·4공대':'중견사립·미대 안정';
+  document.getElementById('kpi-tier-badge').textContent = j400>=360?'동경일공 도전':j400>=350?'구제국·소케이·상위MARCH':j400>=318?'MARCH·칸칸도리츠':j400>=285?'닛토·산킨·4공대':'중견사립·미대';
 
   userScores = { r: scoreR, l: scoreL, j400, j450, tot800, eng };
 }

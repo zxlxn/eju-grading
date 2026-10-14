@@ -1,3 +1,3 @@
 # eju-grading
-EJU 일본어 정밀 가채점 &amp; 대학 합격 진단기
+
 2025 JASSO 공식 통계 및 한·중 입시 빅데이터 기반 EJU 일본어 정밀 가채점 & 대학·학과별 합격 진단 웹 시뮬레이터 (Standalone Web App)

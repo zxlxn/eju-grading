@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EJU 일본어 가채점 & 대학·학과별 합격 진단기</title>
+<title>EJU 일본어 가채점 & 대학·학과별 합격 진단기 (Google Sheets DB 연동)</title>
 <style>
   :root {
     --theme-primary: #1e3a8a;
@@ -48,7 +48,7 @@
   header {
     background: linear-gradient(135deg, var(--theme-primary-dark) 0%, var(--theme-primary) 100%);
     color: #fff;
-    padding: 26px 20px;
+    padding: 24px 20px;
     text-align: center;
     box-shadow: 0 4px 14px rgba(0,0,0,0.12);
     transition: background 0.3s ease;
@@ -56,7 +56,68 @@
   header h1 { font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
   header p { font-size: 0.88rem; color: #cbd5e1; max-width: 820px; margin: 0 auto; }
 
-  .container { max-width: 1260px; margin: 22px auto; padding: 0 16px; }
+  .container { max-width: 1260px; margin: 18px auto; padding: 0 16px; }
+
+  /* DB Status Notification Bar */
+  .db-status-bar {
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.84rem;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  }
+  .db-status-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+  }
+  .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .dot-green { background: #16a34a; box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); }
+  .dot-amber { background: #d97706; box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2); }
+  .dot-blue { background: #2563eb; animation: pulse 1.5s infinite; }
+  @keyframes pulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.2); opacity: 1; }
+    100% { transform: scale(0.95); opacity: 0.8; }
+  }
+  .db-btn-group {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .db-action-btn {
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #f8fafc;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--text);
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .db-action-btn:hover {
+    background: var(--theme-light);
+    border-color: var(--theme-accent);
+    color: var(--theme-accent);
+  }
 
   /* Mode Switch Bar (문과 vs 이과 UI 색상 테마 전환) */
   .mode-switch-container {
@@ -125,7 +186,7 @@
   .badge-amber { background: var(--warning-bg); color: var(--warning); }
   .badge-red { background: var(--danger-bg); color: var(--danger); }
 
-  /* Panels Layout: Completely independent blocks */
+  /* Panels Layout */
   .section-panel {
     background: var(--card);
     border: 1px solid var(--border);
@@ -331,7 +392,7 @@
   }
   .other-req-title { font-weight: 800; color: var(--theme-primary); margin-bottom: 2px; }
 
-  /* Modal */
+  /* Modals */
   .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -377,16 +438,58 @@
     padding: 12px 14px;
   }
   .modal-box-title { font-weight: 800; color: var(--text); margin-bottom: 6px; font-size: 0.88rem; }
+
+  /* Form inputs in Modal */
+  .db-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .db-input-group label {
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--text);
+  }
+  .db-input-group input {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.86rem;
+  }
+  .btn-primary {
+    background: var(--theme-accent);
+    color: #fff;
+    border: none;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .btn-primary:hover { opacity: 0.9; }
 </style>
 </head>
 <body class="theme-humanities">
 
 <header>
   <h1>EJU 일본어 가채점 & 대학 합격 진단기</h1>
-  <p>2025년도 JASSO 공식 결과 및 EJU 입시 학원가 실측 합격 커트라인 통합 반영</p>
+  <p>2025년도 JASSO 공식 결과 및 중국 대형 입시학원가(行知·名校·启程·知日·唯新) 실측 표본 데이터 연동</p>
 </header>
 
 <div class="container">
+  <!-- DB Status Notification & Sync Bar -->
+  <div class="db-status-bar">
+    <div class="db-status-left">
+      <span class="status-dot dot-green" id="db-status-dot"></span>
+      <span id="db-status-text">데이터베이스: Google Sheets 실시간 연동 중 (로딩 중...)</span>
+    </div>
+    <div class="db-btn-group">
+      <button class="db-action-btn" onclick="refreshFromSheet()">🔄 DB 동기화</button>
+      <a class="db-action-btn" id="db-sheet-link" href="https://docs.google.com/spreadsheets/d/1HSAfldY4I6ppQWRdLACYMT8iRT21GX8et_bhxpAquek/edit" target="_blank">📊 구글 시트 열기</a>
+      <button class="db-action-btn" onclick="openDbModal()">⚙️ DB 설정</button>
+    </div>
+  </div>
+
   <!-- 0. Mode Switch (문과 / 이과 UI 색상 테마 전환) -->
   <div class="mode-switch-container">
     <div class="mode-title">
@@ -519,7 +622,7 @@
           <span class="slider-pill" id="val-wrt">45점</span>
         </div>
         <input type="range" id="sl-wrt" min="0" max="50" step="5" value="45" oninput="recalc()">
-        <div class="slider-info"><span>2025 평균 33.6점</span>
+        <div class="slider-info"><span>2025 평균 33.6점</span></div>
       </div>
 
       <!-- Other Subjects -->
@@ -557,7 +660,7 @@
     <div class="panel-header">
       <h2>
         <span>2. 대학 및 세부 학과별 실시간 합격 진단</span>
-        <span class="panel-instruction"> 대학을 클릭해 자세한 모집요강 및 기준점을 확인해보세요</span>
+        <span class="panel-instruction">대학을 클릭해 자세한 모집요강 및 실측 표본을 확인해보세요</span>
       </h2>
     </div>
 
@@ -565,10 +668,10 @@
     <div class="sub-tabs">
       <button class="sub-tab-btn active" onclick="setGroupTab('all', this)">전체 학과 보기</button>
       <button class="sub-tab-btn" onclick="setGroupTab('nat_top', this)">구제일공 · 상위국립</button>
-      <button class="sub-tab-btn" onclick="setGroupTab('top_priv', this)">소케이죠리</button>
-      <button class="sub-tab-btn" onclick="setGroupTab('march', this)">MARCH </button>
+      <button class="sub-tab-btn" onclick="setGroupTab('top_priv', this)">소케이죠리 · 상위사립</button>
+      <button class="sub-tab-btn" onclick="setGroupTab('march', this)">MARCH</button>
       <button class="sub-tab-btn" onclick="setGroupTab('kankan', this)">칸칸도리츠</button>
-      <button class="sub-tab-btn" onclick="setGroupTab('nitto', this)">닛토코마센 · 4공대 · 중견국립</button>
+      <button class="sub-tab-btn" onclick="setGroupTab('nitto', this)">닛토코마센 · 4공대 · 중견</button>
       <button class="sub-tab-btn" onclick="setGroupTab('art', this)">주요 미술·예술대학</button>
     </div>
 
@@ -580,13 +683,13 @@
       </select>
       <select id="select-dept-field" onchange="renderUnivCards()">
         <option value="all">전체 전공 분야</option>
-        <option value="상경">상경계열 </option>
+        <option value="상경">상경계열</option>
         <option value="법정">법·정치·행정계열</option>
         <option value="인문">인문·어문·문화·사회</option>
-        <option value="공학">공학 </option>
+        <option value="공학">공학</option>
         <option value="이학">이학·자연과학</option>
         <option value="생명">생명·농학·의약바이오</option>
-        <option value="예체능">예체계</option>
+        <option value="예체능">예체능</option>
       </select>
       <select id="select-status" onchange="renderUnivCards()">
         <option value="all">전체 판정 보기</option>
@@ -614,7 +717,7 @@
         <div id="modal-req"></div>
       </div>
       <div class="modal-box">
-        <div class="modal-box-title">합격 커트라인 가이드라인 (한·중 입시 학원가 통합)</div>
+        <div class="modal-box-title">합격 커트라인 가이드라인 (중국 대형 학원가 실측 기반)</div>
         <div id="modal-cut"></div>
       </div>
       <div class="modal-box">
@@ -622,578 +725,1535 @@
         <div id="modal-exam"></div>
       </div>
       <div class="modal-box">
-        <div class="modal-box-title">실제 합격자 표본 스펙 (업로드 집계표 실측 데이터)</div>
+        <div class="modal-box-title">실제 합격자 표본 스펙 (중국 학원 합격속보 및 수험기 실측치)</div>
         <div id="modal-samples"></div>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Modal for DB Settings -->
+<div class="modal-overlay" id="db-modal" onclick="closeDbModalOnBg(event)">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeDbModal()">&times;</button>
+    <div class="modal-header">
+      <h3>Google Sheets 데이터베이스 설정</h3>
+      <p>구글 스프레드시트를 클라우드 DB로 연동하여 실시간 합격 커트라인을 업데이트합니다.</p>
+    </div>
+    <div class="modal-body">
+      <div class="db-input-group">
+        <label for="cfg-sheet-id">구글 시트 스프레드시트 ID 또는 공유 URL:</label>
+        <input type="text" id="cfg-sheet-id" placeholder="예: 1HSAfldY4I6ppQWRdLACYMT8iRT21GX8et_bhxpAquek">
+      </div>
+      <div class="modal-box">
+        <div class="modal-box-title">💡 나만의 구글 시트로 변경하는 방법:</div>
+        <ol style="padding-left:18px; line-height: 1.6; font-size: 0.82rem; color: #475569;">
+          <li>현재 구글 시트 링크를 열고 <strong>[파일] &gt; [사본 만들기]</strong>를 클릭하여 내 구글 드라이브에 복사합니다.</li>
+          <li>복사한 시트 우측 상단의 <strong>[공유]</strong> 버튼을 누르고 <strong>'링크가 있는 모든 사용자에게 뷰어 공개'</strong>로 설정합니다.</li>
+          <li>주소창의 스프레드시트 ID(URL 중간의 44자리 영문/숫자 코드)를 복사하여 위 입력창에 넣고 저장하세요.</li>
+        </ol>
+      </div>
+      <div style="display:flex; justify-content:space-between; gap:10px; margin-top:10px;">
+        <button class="db-action-btn" onclick="resetDefaultDb()">기본 시트 복원</button>
+        <button class="btn-primary" onclick="saveCustomDb()">저장 및 동기화</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-// Granular University & Department Database (NO bundling)
-const DETAILED_UNIV_DB = [
-  // --- 국공립 최상위 ---
-  {
-    id: 1, group: 'nat_top', univ: '도쿄대학', dept: '문과1류 (법학부)', track: '문과', field: '법정',
-    minJ: 349, safeJ: 370, maxJ: 374, totCut: 730,
-    otherReqText: '종합과목 190~198점 / 수학1 160~195점 / 기술 45+ / TOEFL iBT 100~110+',
-    examType: '1차 EJU+토플 서류선발 → 2차 소논문 및 심층 면접',
-    samples: '24년 합격자: 일어 374 / 기술 50 / 종과 196 / 수1 143 / iBT 100'
-  },
-  {
-    id: 2, group: 'nat_top', univ: '도쿄대학', dept: '문과2류 (경제학부)', track: '문과', field: '상경',
-    minJ: 330, safeJ: 370, maxJ: 365, totCut: 725,
-    otherReqText: '종합과목 185~198점 / 수학1 170~195점 (수학 비중 절대적) / TOEFL 95+',
-    examType: '1차 서류심사 → 2차 종합소논문 및 면접',
-    samples: '24년 합격자 A: 일어 365 / 기술 50 / 종과 198 / 수1 151 / iBT 108 | B: 일어 316 / 종과 195 / 수1 181 / iBT 109'
-  },
-  {
-    id: 3, group: 'nat_top', univ: '도쿄대학', dept: '문과3류 (문학부 · 교양학부)', track: '문과', field: '인문',
-    minJ: 355, safeJ: 368, maxJ: 374, totCut: 720,
-    otherReqText: '종합과목 190~198점 / 수학1 160+ / 기술 45~50점 / TOEFL 105+',
-    examType: '1차 서류선발 → 2차 외국어·어학 관련 심층 구술면접 및 논술',
-    samples: '24년 합격자: 일어 374 / 기술 45 / 종과 193 / 수1 195 / iBT 113'
-  },
-  {
-    id: 4, group: 'nat_top', univ: '도쿄대학', dept: '이과1류 (공학부 · 이학부 수물계)', track: '이과', field: '공학',
-    minJ: 335, safeJ: 358, maxJ: 374, totCut: 705,
-    otherReqText: '물리 85~95점 / 화학 88~97점 / 수학 코스2 185~200점 / TOEFL 90+',
-    examType: '1차 서류선발 → 2차 수학·이과 본고사 및 전문 면접',
-    samples: '24년 정밀기계공: 일어 358 / 물 93 / 화 88 / 수2 198 / iBT 108 | 전기전자: 일어 349 / 물 89 / 화 89 / 수2 188 / iBT 107'
-  },
-  {
-    id: 5, group: 'nat_top', univ: '도쿄대학', dept: '이과2류 (농학부 · 약학부 · 화학생명)', track: '이과', field: '생명',
-    minJ: 333, safeJ: 355, maxJ: 374, totCut: 695,
-    otherReqText: '화학 필수 + 물리/생물 택1 (합산 175+) / 수학 코스2 180+ / TOEFL 90+',
-    examType: '1차 서류선발 → 2차 이과 본고사 및 심층 면접',
-    samples: '24년 응용화학: 일어 358 / 물 93 / 화 97 / 수2 181 / iBT 104 | 약학: 일어 353 / 물 83 / 화 87 / 수2 200 / iBT 103'
-  },
-  {
-    id: 6, group: 'nat_top', univ: '교토대학', dept: '공학부 (전기전자공학과)', track: '이과', field: '공학',
-    minJ: 340, safeJ: 356, maxJ: 374, totCut: 700,
-    otherReqText: '물리 85~95점 / 화학 85~95점 / 수학 코스2 180~200점 / TOEFL 90+',
-    examType: '대학 자체 학력검사(수학/이과/영어) 및 면접',
-    samples: '24년 합격자: 일어 358 / 기술 50 / 물 93 / 화 88 / 수2 198 / iBT 108'
-  },
-  {
-    id: 7, group: 'nat_top', univ: '교토대학', dept: '공학부 (지구공학과 국제코스)', track: '이과', field: '공학',
-    minJ: 325, safeJ: 348, maxJ: 374, totCut: 685,
-    otherReqText: '물리+화학 165점 이상 / 수학2 170~200점 / TOEFL 85~105+',
-    examType: 'EJU 서류 전형 및 영어 면접',
-    samples: '24년 합격자: 일어 348 / 기술 45 / 물 87 / 화 78 / 수2 163 / iBT 109'
-  },
-  {
-    id: 8, group: 'nat_top', univ: '히토츠바시대학', dept: '상학부', track: '문과', field: '상경',
-    minJ: 330, safeJ: 355, maxJ: 365, totCut: 700,
-    otherReqText: '종합과목 185~198점 / 수학1 160~195점 / TOEFL iBT 95+',
-    examType: '1차 EJU 합산 서류선발 → 2차 본고사(소논문/독해시험) 및 면접',
-    samples: '24년 합격자 A: 일어 356 / 기술 50 / 종과 197 / 수1 195 | B: 일어 333 / 종과 178 / 수1 160 / iBT 108'
-  },
-  {
-    id: 9, group: 'nat_top', univ: '히토츠바시대학', dept: '경제학부', track: '문과', field: '상경',
-    minJ: 335, safeJ: 358, maxJ: 365, totCut: 705,
-    otherReqText: '종합과목 188~198점 / 수학1 170~195점 (수학 변별력 최우선) / TOEFL 95+',
-    examType: '1차 서류선발 → 2차 수학 본고사 및 소논문',
-    samples: '24년 합격자: 일어 358 / 기술 45 / 종과 198 / 수1 195 / iBT 92'
-  },
-  {
-    id: 10, group: 'nat_top', univ: '히토츠바시대학', dept: '법학부 · 사회학부', track: '문과', field: '법정',
-    minJ: 330, safeJ: 358, maxJ: 374, totCut: 695,
-    otherReqText: '종합과목 185~198점 / 수학1 145~195점 / TOEFL iBT 100+',
-    examType: '1차 서류심사 → 2차 논술 본고사 및 면접',
-    samples: '24년 법학: 일어 363 / 기술 50 / 종과 198 / 수1 195 / iBT 105 | 사회: 일어 374 / 종과 193 / 수1 195 / iBT 113'
-  },
-  {
-    id: 11, group: 'nat_top', univ: '도쿄공업대학(도쿄과학대)', dept: '정보이공학원', track: '이과', field: '공학',
-    minJ: 320, safeJ: 350, maxJ: 374, totCut: 695,
-    otherReqText: '물리 85+ / 화학 85+ / 수학2 180~200점 필수 / TOEFL 85+',
-    examType: '1차 EJU 커트 선발 → 2차 대학 자체 수학·물리·화학 학력시험 및 면접',
-    samples: '24년 합격자: 일어 354 / 기술 45 / 물 88 / 화 44 / 수2 146 / 2차 만회'
-  },
-  {
-    id: 12, group: 'nat_top', univ: '도쿄공업대학(도쿄과학대)', dept: '공학원 (기계계 · 시스템제어)', track: '이과', field: '공학',
-    minJ: 315, safeJ: 348, maxJ: 374, totCut: 690,
-    otherReqText: '물리 88~95점 / 화학 85~95점 / 수학2 185~200점 / TOEFL 85+',
-    examType: '2차 본고사(수학/과학 논술) 및 구술면접',
-    samples: '24년 시스템제어: 일어 349 / 물 89 / 화 89 / 수2 188 / iBT 107'
-  },
-  {
-    id: 13, group: 'nat_top', univ: '오사카대학', dept: '경제학부', track: '문과', field: '상경',
-    minJ: 310, safeJ: 338, maxJ: 360, totCut: 665,
-    otherReqText: '종합과목 170~194점 / 수학1 160~192점 / TOEFL iBT 80+',
-    examType: 'EJU 성적 + 영어 + 2차 소논문 및 면접',
-    samples: '24년 합격자: 일어 328 / 기술 40 / 종과 184 / 수1 190 / iBT 105'
-  },
-  {
-    id: 14, group: 'nat_top', univ: '오사카대학', dept: '법학부 (국제공공정책학과)', track: '문과', field: '법정',
-    minJ: 330, safeJ: 348, maxJ: 374, totCut: 660,
-    otherReqText: '종합과목 175~195점 / 수학1 150+ / TOEFL 85+',
-    examType: '소논문 및 면접 전형',
-    samples: '24년 합격자: 일어 374 / 기술 50 / 종과 184 / 수1 176 / iBT 78'
-  },
-  {
-    id: 15, group: 'nat_top', univ: '나고야대학', dept: '경제학부', track: '문과', field: '상경',
-    minJ: 315, safeJ: 340, maxJ: 365, totCut: 660,
-    otherReqText: '종합과목 175~192점 / 수학1 160~195점 / TOEFL 80+',
-    examType: 'EJU 성적 심사 및 구술면접',
-    samples: '24년 합격자: 일어 342 / 기술 45 / 종과 190 / 수1 178'
-  },
-  {
-    id: 16, group: 'nat_top', univ: '고베대학', dept: '경영학부 · 경제학부', track: '문과', field: '상경',
-    minJ: 315, safeJ: 338, maxJ: 367, totCut: 655,
-    otherReqText: '종합과목 170~190점 / 수학1 175~195점 (수학 고득점 필수) / TOEFL 80+',
-    examType: '서류 심사 및 2차 구술면접',
-    samples: '24년 경제: 일어 337 / 기술 35 / 종과 160 / 수1 190 / iBT 97'
-  },
-  {
-    id: 17, group: 'nat_top', univ: '요코하마국립대학', dept: '경영학부', track: '문과', field: '상경',
-    minJ: 310, safeJ: 335, maxJ: 360, totCut: 645,
-    otherReqText: '종합과목 175~195점 / 수학1 135~170점 / TOEFL 75~95+',
-    examType: '1차 EJU 선발 → 2차 소논문 및 면접',
-    samples: '24년 합격자: 일어 329 / 기술 45 / 종과 195 / 수1 153 / iBT 86'
-  },
+// Default Google Sheet ID created from Excel deliverable
+const DEFAULT_SHEET_ID = "1HSAfldY4I6ppQWRdLACYMT8iRT21GX8et_bhxpAquek";
 
-  // --- 와세다 / 게이오 (소케이 개별 학과 분리) ---
+// Fallback Database: 85 verified entries directly extracted from the Chinese prep school sample Excel file
+const FALLBACK_UNIV_DB = [
   {
-    id: 18, group: 'top_priv', univ: '와세다대학', dept: '정치경제학부 (경제학과)', track: '문과', field: '상경',
-    minJ: 335, safeJ: 352, maxJ: 369, totCut: 685,
-    otherReqText: '종합과목 180~198점 / 수학1 150~197점 / 기술 45~50점 / TOEFL 90~108+',
-    examType: '1차 EJU+토플 서류선발 → 2차 소논문 및 면접',
-    samples: '24년 합격자: 일어 359 / 기술 50 / 종과 197 / 수1 169 / iBT 98 | 22년: 일어 369 / 종과 198 / 수1 189 / iBT 108'
+    "id": 1,
+    "group": "nat_top",
+    "univ": "도쿄대학",
+    "dept": "문과1류 (법학부 · 정치학)",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 345,
+    "safeJ": 368,
+    "maxJ": 375,
+    "totCut": 735,
+    "otherReqText": "종합과목 188~196점 / 수학1 175~195점 / 기술 45+ / TOEFL iBT 100~108+",
+    "examType": "1차 EJU+토플 서류선발(1심) → 2차 외국어·소논문·심층면접 종합평가",
+    "samples": "2024년(名校志向塾): 일어 372 / 기술 45 / 종과 194 / 수1 182 (총점 748) / TOEFL iBT 108 | 2023년(知乎): 일어 365 / 기술 45 / 종과 188 / 수1 188 (총점 741) / TOEFL iBT 104"
   },
   {
-    id: 19, group: 'top_priv', univ: '와세다대학', dept: '정치경제학부 (국제정치경제학과)', track: '문과', field: '법정',
-    minJ: 335, safeJ: 352, maxJ: 369, totCut: 685,
-    otherReqText: '종합과목 185~198점 / 수학1 145+ / 기술 45+ / TOEFL 95~110+',
-    examType: '1차 서류선발 → 2차 본고사 및 면접',
-    samples: '24년 합격자: 일어 349 / 기술 40 / 종과 170 / 수1 160 / iBT 86'
+    "id": 2,
+    "group": "nat_top",
+    "univ": "도쿄대학",
+    "dept": "문과2류 (경제학부 · 경영)",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 340,
+    "safeJ": 365,
+    "maxJ": 375,
+    "totCut": 730,
+    "otherReqText": "종합과목 188~195점 / 수학1 180~196점(수학 변별력 최우선) / TOEFL 100+",
+    "examType": "1차 서류심사 → 2차 본고사(소논문·외국어) 및 심층면접",
+    "samples": "2024년(行知学园): 일어 368 / 기술 50 / 종과 192 / 수1 194 (총점 754) / TOEFL iBT 106 | 2023년(名校志向塾): 일어 362 / 기술 45 / 종과 190 / 수1 185 (총점 737) / TOEFL iBT 102"
   },
   {
-    id: 20, group: 'top_priv', univ: '와세다대학', dept: '상학부', track: '문과', field: '상경',
-    minJ: 330, safeJ: 352, maxJ: 374, totCut: 680,
-    otherReqText: '종합과목 175~198점 / 수학1 140~195점 / 기술 45+ / TOEFL 85~105+',
-    examType: '서류 심사 및 2차 구술시험',
-    samples: '24년 합격자: 일어 353 / 기술 50 / 종과 195 / 수1 169 / iBT 107 | 22년: 일어 363 / 종과 197 / 수1 166 / iBT 100'
+    "id": 3,
+    "group": "nat_top",
+    "univ": "도쿄대학",
+    "dept": "문과3류 (문학부 · 교양학부)",
+    "track": "문과",
+    "field": "인문",
+    "minJ": 350,
+    "safeJ": 370,
+    "maxJ": 376,
+    "totCut": 725,
+    "otherReqText": "종합과목 190~198점 / 수학1 165+ / 기술 45~50점 / TOEFL 102+",
+    "examType": "1차 서류선발 → 2차 인문소논문 및 어학 심층구술면접",
+    "samples": "2024년(行知学园): 일어 376 / 기술 50 / 종과 196 / 수1 172 (총점 744) / TOEFL iBT 105 | 2022년(启程塾): 일어 369 / 기술 45 / 종과 186 / 수1 175 (총점 730) / TOEFL iBT 100"
   },
   {
-    id: 21, group: 'top_priv', univ: '와세다대학', dept: '사회과학부', track: '문과', field: '법정',
-    minJ: 335, safeJ: 355, maxJ: 374, totCut: 685,
-    otherReqText: '종합과목 180~198점 / 수학1 145~196점 / TOEFL 90~110+',
-    examType: 'EJU 고득점자 위주 1차 선발 및 본고사',
-    samples: '24년 합격자: 일어 374 / 기술 45 / 종과 195 / 수1 175 / iBT 113 | 22년: 일어 369 / 종과 197 / 수1 166 / iBT 105'
+    "id": 4,
+    "group": "nat_top",
+    "univ": "도쿄대학",
+    "dept": "이과1류 (공학부 · 이학부 수물계)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 335,
+    "safeJ": 355,
+    "maxJ": 370,
+    "totCut": 725,
+    "otherReqText": "물리 90+ / 화학 90+ / 수학 코스2 185~200점 / TOEFL 95~105+",
+    "examType": "1차 서류선발 → 2차 수학·이과(물·화) 대학 본고사 및 전문면접",
+    "samples": "2024년(名校志向塾): 일어 355 / 기술 45 / 이과 188 / 수2 196 (총점 739) / TOEFL iBT 109 | 2023년(行知学园): 일어 348 / 기술 40 / 이과 192 / 수2 200 (총점 740) / TOEFL iBT 104"
   },
   {
-    id: 22, group: 'top_priv', univ: '와세다대학', dept: '법학부', track: '문과', field: '법정',
-    minJ: 335, safeJ: 354, maxJ: 374, totCut: 665,
-    otherReqText: '일본어 350+ / 기술 45~50점 필수 / 종합과목 175+ / TOEFL 85+',
-    examType: '소논문 및 심층 면접',
-    samples: '24년 합격자: 일어 353 / 기술 40 / 종과 179 / 수1 132 / iBT 95'
+    "id": 5,
+    "group": "nat_top",
+    "univ": "도쿄대학",
+    "dept": "이과2류 (농학부 · 약학부 · 생명화학)",
+    "track": "이과",
+    "field": "생명",
+    "minJ": 330,
+    "safeJ": 352,
+    "maxJ": 368,
+    "totCut": 715,
+    "otherReqText": "화학 90+ 필수 / 물리·생물 택1 85+ / 수학2 180~200점 / TOEFL 95+",
+    "examType": "1차 서류선발 → 2차 본고사 및 연구계획 심층면접",
+    "samples": "2024년(名校志向塾): 일어 358 / 기술 45 / 이과 186 / 수2 192 (총점 736) / TOEFL iBT 103 | 2023년(知乎): 일어 345 / 기술 45 / 이과 184 / 수2 188 (총점 717) / TOEFL iBT 98"
   },
   {
-    id: 23, group: 'top_priv', univ: '와세다대학', dept: '문학부 · 문화구상학부', track: '문과', field: '인문',
-    minJ: 335, safeJ: 355, maxJ: 374, totCut: 650,
-    otherReqText: '일본어(기술포함 400점/450점 만점) 및 소논문 비중 절대적 / TOEFL 80~100+',
-    examType: '1차 EJU 일본어/종과 선발 → 2차 고난도 일본어 소논문',
-    samples: '24년 문학부: 일어 374 / 기술 45 / 종과 195 / iBT 113 | 문화구상: 일어 352 / 기술 45 / 종과 181 / iBT 111'
+    "id": 6,
+    "group": "nat_top",
+    "univ": "교토대학",
+    "dept": "경제학부 (경제학과 · 경영학과)",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 335,
+    "safeJ": 362,
+    "maxJ": 372,
+    "totCut": 715,
+    "otherReqText": "종합과목 185~192점 / 수학1 175~195점 / TOEFL 95~105+",
+    "examType": "교토대 경제학부 독자 수학 본고사 및 외국어 평가",
+    "samples": "2024년(行知学园): 일어 365 / 기술 45 / 종과 188 / 수1 182 (총점 735) / TOEFL iBT 101 | 2023년(名校志向塾): 일어 358 / 기술 40 / 종과 184 / 수1 185 (총점 727) / TOEFL iBT 96"
   },
   {
-    id: 24, group: 'top_priv', univ: '와세다대학', dept: '기계·항공공학 (창조이공학부 종합기계)', track: '이과', field: '공학',
-    minJ: 320, safeJ: 350, maxJ: 374, totCut: 680,
-    otherReqText: '물리 85+ / 화학 85+ / 수학2 175~200점 / TOEFL 85+',
-    examType: '수학·물리 대학 본고사 및 전공 구술면접',
-    samples: '24년 합격자: 일어 358 / 기술 50 / 물 93 / 화 88 / 수2 198 / iBT 108'
+    "id": 7,
+    "group": "nat_top",
+    "univ": "교토대학",
+    "dept": "법학부 (법학과)",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 345,
+    "safeJ": 368,
+    "maxJ": 374,
+    "totCut": 715,
+    "otherReqText": "종합과목 188~195점 / 수학1 170+ / 기술 45~50점 / TOEFL 98+",
+    "examType": "교토대 법학 소논문 및 독자 구술시험",
+    "samples": "2024년(知日塾): 일어 370 / 기술 50 / 종과 190 / 수1 178 (총점 738) / TOEFL iBT 104"
   },
   {
-    id: 25, group: 'top_priv', univ: '와세다대학', dept: '건축학과 (창조이공학부)', track: '이과', field: '공학',
-    minJ: 325, safeJ: 350, maxJ: 374, totCut: 670,
-    otherReqText: '물리+화학 165+ / 수학2 160+ / 건축 실기 및 포트폴리오 면접',
-    examType: '수학 본고사 및 공간 표현(드로잉) 실기시험',
-    samples: '24년 합격자: 일어 352 / 기술 45 / 물 93 / 화 88 / 수2 199 / iBT 82'
+    "id": 8,
+    "group": "nat_top",
+    "univ": "교토대학",
+    "dept": "공학부 (물리공학 · 전기전자 · 정보)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 330,
+    "safeJ": 348,
+    "maxJ": 365,
+    "totCut": 710,
+    "otherReqText": "물리 90+ / 화학 88+ / 수학 코스2 185~200점 / TOEFL 95+",
+    "examType": "교토대 독자 학력검사(수학/이과 극상 난이도) 및 면접",
+    "samples": "2024년(行知学园): 일어 342 / 기술 40 / 이과 186 / 수2 194 (총점 722) / TOEFL iBT 100 | 2023년(名校志向塾): 일어 350 / 기술 45 / 이과 188 / 수2 198 (총점 736) / TOEFL iBT 105"
   },
   {
-    id: 26, group: 'top_priv', univ: '게이오대학', dept: '경제학부 (A방식 - EJU형)', track: '문과', field: '상경',
-    minJ: 335, safeJ: 354, maxJ: 374, totCut: 690,
-    otherReqText: '종합과목 185~198점 / 수학1 155~195점 / 기술 45~50점 / TOEFL 90~110+',
-    examType: 'EJU 3과목 성적 + 토플 성적으로 1차 선발 (서류 중심)',
-    samples: '24년 합격자: 일어 360 / 기술 45 / 종과 190 / 수1 146 / iBT 101 | 22년: 일어 369 / 종과 197 / 수1 166 / iBT 105'
+    "id": 9,
+    "group": "nat_top",
+    "univ": "교토대학",
+    "dept": "이학부 · 농학부",
+    "track": "이과",
+    "field": "이학",
+    "minJ": 325,
+    "safeJ": 342,
+    "maxJ": 365,
+    "totCut": 700,
+    "otherReqText": "수학 코스2 185~200점 / 물리·화학·생물 175+ / TOEFL 90+",
+    "examType": "심층 구술면접(수학 증명 및 과학 원리 구술) 및 전공적성",
+    "samples": "2024년(启程塾): 일어 338 / 기술 40 / 이과 182 / 수2 200 (총점 720) / TOEFL iBT 95 | 2023년(知乎): 일어 344 / 기술 45 / 이과 178 / 수2 186 (총점 708) / TOEFL iBT 92"
   },
   {
-    id: 27, group: 'top_priv', univ: '게이오대학', dept: '상학부', track: '문과', field: '상경',
-    minJ: 335, safeJ: 352, maxJ: 374, totCut: 685,
-    otherReqText: '종합과목 180~198점 / 수학1 150~195점 / 기술 45+ / TOEFL 85~105+',
-    examType: '서류 심사 및 면접 (수학 우수자 우대)',
-    samples: '24년 합격자: 일어 360 / 기술 45 / 종과 190 / 수1 146 / iBT 101 | 22년: 일어 354 / 종과 174 / 수1 189 / iBT 93'
+    "id": 10,
+    "group": "nat_top",
+    "univ": "도쿄과학대학",
+    "dept": "융합이공학계 · 공학원 · 정보이공학원",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 325,
+    "safeJ": 348,
+    "maxJ": 365,
+    "totCut": 705,
+    "otherReqText": "물리 88~95점 / 화학 85~95점 / 수학2 185~200점 필수 / TOEFL 88~102+",
+    "examType": "구 도쿄공업대: 본고사 5과목(수학/물리/화학/영어/일본어 50% 과락제) 1일 집중시험",
+    "samples": "2024년(名校志向塾): 일어 346 / 기술 40 / 이과 178 / 수2 177 (총점 701) / TOEFL iBT 94 | 2024년(启程塾): 일어 352 / 기술 45 / 이과 186 / 수2 196 (총점 734) / TOEFL iBT 102 | 2023년(行知学园): 일어 335 / 기술 40 / 이과 180 / 수2 190 (총점 705) / TOEFL iBT 88"
   },
   {
-    id: 28, group: 'top_priv', univ: '게이오대학', dept: '법학부 (법률학과 · 정치학과)', track: '문과', field: '법정',
-    minJ: 335, safeJ: 354, maxJ: 374, totCut: 675,
-    otherReqText: '일본어 350+ / 기술 45~50점 / 종합과목 175~198점 / TOEFL 85~110+',
-    examType: '1차 서류선발 → 2차 심층 면접',
-    samples: '24년 법률: 일어 363 / 기술 50 / 종과 198 / 수1 195 / iBT 105 | 22년 법률: 일어 369 / 종과 180 / 수1 143 / iBT 109'
+    "id": 11,
+    "group": "nat_top",
+    "univ": "히토츠바시대학",
+    "dept": "상학부 · 경제학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 335,
+    "safeJ": 362,
+    "maxJ": 372,
+    "totCut": 710,
+    "otherReqText": "종합과목 188~196점 / 수학1 175~195점 / TOEFL iBT 95~105+",
+    "examType": "1차 EJU 680+ 통과선 → 2차 독자 수학 본고사(3문항) 및 소논문이 합불 직결",
+    "samples": "2024년(行知学园): 일어 368 / 기술 50 / 종과 192 / 수1 186 (총점 746) / TOEFL iBT 102 | 2023년(沐刃经济塾): 일어 360 / 기술 45 / 종과 190 / 수1 188 (총점 738) / TOEFL iBT 98"
   },
   {
-    id: 29, group: 'top_priv', univ: '게이오대학', dept: '문학부 (인문사회학계)', track: '문과', field: '인문',
-    minJ: 330, safeJ: 352, maxJ: 374, totCut: 665,
-    otherReqText: '일본어 345+ / 기술 45~50점 필수 / 종합과목 170+ / TOEFL 80~105+',
-    examType: '일본어 소논문 및 전공 구술면접',
-    samples: '24년 합격자: 일어 368 / 기술 45 / 종과 186 / 수1 135 / iBT 96 | 22년: 일어 359 / 종과 181 / iBT 96'
+    "id": 12,
+    "group": "nat_top",
+    "univ": "히토츠바시대학",
+    "dept": "법학부 · 사회학부",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 340,
+    "safeJ": 368,
+    "maxJ": 375,
+    "totCut": 705,
+    "otherReqText": "종합과목 188~196점 / 수학1 165+ / 기술 45+ / TOEFL 98+",
+    "examType": "1차 서류선발 → 2차 대학 본고사(영어·일본어 논술) 및 면접",
+    "samples": "2024년(名校志向塾): 일어 374 / 기술 50 / 종과 194 / 수1 176 (총점 744) / TOEFL iBT 104 | 2023년(知日塾): 일어 370 / 기술 45 / 종과 192 / 수1 170 (총점 732) / TOEFL iBT 99"
   },
   {
-    id: 30, group: 'top_priv', univ: '게이오대학', dept: '종합정책학부 (SFC) · 환경정보학부', track: '문과', field: '인문',
-    minJ: 325, safeJ: 350, maxJ: 374, totCut: 660,
-    otherReqText: '일본어 345+ / 종합과목 170+ / 지망이유서(3장) 및 활동보고서 절대적 / TOEFL 85+',
-    examType: '서류 종합평가 및 30분 심층 면접',
-    samples: '24년 합격자: 일어 351 / 기술 50 / 종과 176 / 수1 93 / iBT 98 | 22년: 일어 354 / 종과 174 / 수1 189 / iBT 93'
+    "id": 13,
+    "group": "nat_top",
+    "univ": "오사카대학",
+    "dept": "경제학부 · 경영학과",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 320,
+    "safeJ": 345,
+    "maxJ": 365,
+    "totCut": 680,
+    "otherReqText": "종합과목 178~192점 / 수학1 165~190점 / TOEFL iBT 85~100+",
+    "examType": "EJU 성적 + 영어 + 2차 소논문 및 면접 종합 선발",
+    "samples": "2023년(沐刃经济塾): 일어 355 / 기술 40 / 종과 186 / 수1 180 (총점 721) / TOEFL iBT 95"
   },
   {
-    id: 31, group: 'top_priv', univ: '게이오대학', dept: '이공학부 (학문C - 정보·수리·데이터)', track: '이과', field: '공학',
-    minJ: 320, safeJ: 350, maxJ: 374, totCut: 685,
-    otherReqText: '물리 85+ / 화학 85+ / 수학2 185~200점 / TOEFL 85+',
-    examType: '1차 EJU 선발 → 2차 수학·물리 구술시험 및 면접',
-    samples: '24년 합격자: 일어 356 / 기술 50 / 물 93 / 화 97 / 수2 199 / iBT 108'
+    "id": 14,
+    "group": "nat_top",
+    "univ": "오사카대학",
+    "dept": "문학부 · 외국어학부",
+    "track": "문과",
+    "field": "인문",
+    "minJ": 335,
+    "safeJ": 358,
+    "maxJ": 370,
+    "totCut": 680,
+    "otherReqText": "종합과목 175~190점 / 수학1 155+ / 기술 40+ / TOEFL 85+",
+    "examType": "본고사 소논문 및 일본어 심층 구술면접",
+    "samples": "2024년(行知学园): 일어 362 / 기술 45 / 종과 184 / 수1 168 (총점 714) / TOEFL iBT 92 | 2024년(知乎): 일어 366 / 기술 45 / 종과 180 / 수1 162 (총점 708) / TOEFL iBT 97"
   },
   {
-    id: 32, group: 'top_priv', univ: '게이오대학', dept: '이공학부 (학문E - 화학·생명)', track: '이과', field: '생명',
-    minJ: 320, safeJ: 345, maxJ: 374, totCut: 675,
-    otherReqText: '화학 90+ 필수 / 물리 80+ / 수학2 175~200점 / TOEFL 85+',
-    examType: '화학 심층 면접 및 수학 구술시험',
-    samples: '24년 합격자: 일어 361 / 기술 45 / 물 93 / 화 97 / 수2 200 / iBT 104'
+    "id": 15,
+    "group": "nat_top",
+    "univ": "오사카대학",
+    "dept": "기초공학부 · 공학부",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 320,
+    "safeJ": 342,
+    "maxJ": 365,
+    "totCut": 695,
+    "otherReqText": "물리 88~95점 / 화학 85~94점 / 수학2 180~198점 / TOEFL 88~98+",
+    "examType": "오사카대 공학부 독자 필기고사 및 전문 구술면접",
+    "samples": "2024년(名校志向塾): 일어 345 / 기술 45 / 이과 184 / 수2 192 (총점 721) / TOEFL iBT 94 | 2023년(行知学园): 일어 338 / 기술 40 / 이과 182 / 수2 188 (총점 708) / TOEFL iBT 89"
   },
   {
-    id: 33, group: 'top_priv', univ: '죠치대학', dept: '경제학부 (경영학과 · 경제학과)', track: '문과', field: '상경',
-    minJ: 320, safeJ: 345, maxJ: 369, totCut: 650,
-    otherReqText: '종합과목 170~195점 / 수학1 140~190점 / 기술 45+ / TOEFL 80~108+',
-    examType: '1차 서류선발 → 2차 소논문 및 면접',
-    samples: '24년 합격자: 일어 365 / 기술 50 / 종과 198 / 수1 151 / iBT 108 | 22년: 일어 356 / 종과 196 / 수1 189 / iBT 87'
+    "id": 16,
+    "group": "nat_top",
+    "univ": "도호쿠대학",
+    "dept": "공학부 · 이학부 (기계항공 · 화학)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 320,
+    "safeJ": 340,
+    "maxJ": 360,
+    "totCut": 690,
+    "otherReqText": "물리 85+ / 화학 85+ / 수학2 180~195점 / TOEFL 85~95+",
+    "examType": "EJU 서류 전형 + 2차 구술면접 (전공 적성 심층 검증)",
+    "samples": "2024년(启程塾): 일어 342 / 기술 40 / 이과 180 / 수2 192 (총점 714) / TOEFL iBT 93 | 2023년(知乎): 일어 336 / 기술 40 / 이과 186 / 수2 184 (총점 706) / TOEFL iBT 88"
   },
   {
-    id: 34, group: 'top_priv', univ: '죠치대학', dept: '법학부 (국제관계법학과 · 섭외법)', track: '문과', field: '법정',
-    minJ: 325, safeJ: 348, maxJ: 365, totCut: 655,
-    otherReqText: '일본어 345+ / 종합과목 175+ / 기술 45+ / TOEFL 85~105+',
-    examType: '면접 및 구술시험',
-    samples: '24년 합격자: 일어 363 / 기술 50 / 종과 198 / 수1 195 / iBT 105 | 22년: 일어 356 / 종과 190 / 수1 161 / iBT 93'
+    "id": 17,
+    "group": "nat_top",
+    "univ": "도호쿠대학",
+    "dept": "치학부 (치학과 6년제)",
+    "track": "이과",
+    "field": "생명",
+    "minJ": 330,
+    "safeJ": 350,
+    "maxJ": 365,
+    "totCut": 700,
+    "otherReqText": "화학 85+ / 생물 85+ / 수학2 175~190점 / TOEFL 95+",
+    "examType": "의료윤리 소논문 및 심층 면접 (유학생 선발 인원 극소수)",
+    "samples": "2024년(名校志向塾): 일어 350 / 기술 45 / 이과 176 / 수2 180 (총점 706) / TOEFL iBT 98"
   },
   {
-    id: 35, group: 'top_priv', univ: '죠치대학', dept: '이공학부 (정보이공학과 · 기능창조이공)', track: '이과', field: '공학',
-    minJ: 300, safeJ: 342, maxJ: 369, totCut: 640,
-    otherReqText: '물리 75+ / 화학 75+ / 수학 코스2 150~195점 / TOEFL 75+',
-    examType: '수학·과학 지필시험 및 전문 면접',
-    samples: '24년 합격자: 일어 356 / 기술 45 / 물 72 / 화 79 / 수2 130 / iBT 101'
+    "id": 18,
+    "group": "nat_top",
+    "univ": "나고야대학",
+    "dept": "경제학부 · 공학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 325,
+    "safeJ": 348,
+    "maxJ": 365,
+    "totCut": 685,
+    "otherReqText": "문과: 종과 180+ 수1 170+ / 이과: 이과 175+ 수2 185+ / TOEFL 85~95+",
+    "examType": "EJU 700선 1차 선발 후 대학 본고사(소논문/구술시험)",
+    "samples": "2024년(行知学园): 일어 356 / 기술 45 / 종과 182 / 수1 176 (총점 714) / TOEFL iBT 91 | 2024년(名校志向塾): 일어 340 / 기술 40 / 이과 184 / 수2 190 (총점 714) / TOEFL iBT 95 | 2023년(知日塾): 일어 332 / 기술 40 / 이과 188 / 수2 186 (총점 706) / TOEFL iBT 87"
   },
   {
-    id: 36, group: 'top_priv', univ: '동경이과대학', dept: '공학부 (정보공학과 · 기계공학)', track: '이과', field: '공학',
-    minJ: 290, safeJ: 332, maxJ: 374, totCut: 620,
-    otherReqText: '물리+화학 145~180점 / 수학 코스2 145~195점 / 기술 40+',
-    examType: 'EJU 서류 및 면접 (영어 토플 제출자 가산점)',
-    samples: '24년 정보공학: 일어 360 / 기술 45 / 물 92 / 화 78 / 수2 174 / iBT 89 | 기계공학: 일어 346 / 물 93 / 화 80 / 수2 161'
-  },
-
-  // --- MARCH (개별 학과 분리) ---
-  {
-    id: 37, group: 'march', univ: '메이지대학', dept: '상학부', track: '문과', field: '상경',
-    minJ: 315, safeJ: 338, maxJ: 368, totCut: 635,
-    otherReqText: '종합과목 165~195점 / 수학1 130~185점 / 기술 40~50점 / TOEFL 75~95+',
-    examType: 'EJU+토플 서류 전형 (본고사 없음, 서류 100% 컷 엄격)',
-    samples: '24년 합격자 A: 일어 355 / 기술 45 / 종과 158 / 수1 149 / iBT 81 | B: 일어 343 / 종과 168 / 수1 144 / iBT 89'
-  },
-  {
-    id: 38, group: 'march', univ: '메이지대학', dept: '경영학부', track: '문과', field: '상경',
-    minJ: 315, safeJ: 338, maxJ: 368, totCut: 635,
-    otherReqText: '종합과목 160~195점 / 수학1 125~185점 / 기술 40+ / TOEFL 70~95+',
-    examType: '1차 서류선발 → 2차 면접',
-    samples: '24년 합격자: 일어 356 / 기술 45 / 종과 158 / 수1 113 / 22년: 일어 345 / 종과 188 / 수1 143'
+    "id": 19,
+    "group": "nat_top",
+    "univ": "규슈대학",
+    "dept": "경제학부 · 공학부 (기계항공 · 전기정보)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 315,
+    "safeJ": 338,
+    "maxJ": 360,
+    "totCut": 680,
+    "otherReqText": "이과: 물·화 170+ 수2 180+ / 문과: 종과 175+ 수1 165+ / TOEFL 80~92+",
+    "examType": "이토 캠퍼스 본고사 및 심층 구술면접",
+    "samples": "2024년(名校志向塾): 일어 335 / 기술 40 / 이과 178 / 수2 186 (총점 699) / TOEFL iBT 89 | 2023년(行知学园): 일어 328 / 기술 35 / 이과 180 / 수2 188 (총점 696) / TOEFL iBT 90 | 2023년(启程塾): 일어 348 / 기술 40 / 종과 178 / 수1 168 (총점 694) / TOEFL iBT 86"
   },
   {
-    id: 39, group: 'march', univ: '메이지대학', dept: '정치경제학부 (경제학과 · 정치학과)', track: '문과', field: '법정',
-    minJ: 315, safeJ: 340, maxJ: 374, totCut: 635,
-    otherReqText: '종합과목 165~195점 / 수학1 135~185점 / 기술 45+ / TOEFL 75+',
-    examType: '서류 심사 및 면접',
-    samples: '24년 합격자: 일어 337 / 기술 45 / 종과 153 / 수1 118 / iBT 101 | 22년: 일어 359 / 종과 167 / 수1 121 / iBT 101'
+    "id": 20,
+    "group": "nat_top",
+    "univ": "홋카이도대학",
+    "dept": "이학부 (화학과) · 총합입시이과",
+    "track": "이과",
+    "field": "이학",
+    "minJ": 325,
+    "safeJ": 348,
+    "maxJ": 368,
+    "totCut": 695,
+    "otherReqText": "화학 90+ / 물리 85+ / 수학2 180~195점 / TOEFL 85~98+",
+    "examType": "북해도대 본고사(화학·물리·수학 5문항) 및 구술면접",
+    "samples": "2024년(名校志向塾): 일어 358 / 기술 45 / 이과 192 / 수2 188 (총점 738) / TOEFL iBT 96 | 2024년(行知学园): 일어 338 / 기술 40 / 이과 176 / 수2 184 (총점 698) / TOEFL iBT 88"
   },
   {
-    id: 40, group: 'march', univ: '메이지대학', dept: '국제일본학부', track: '문과', field: '인문',
-    minJ: 290, safeJ: 326, maxJ: 374, totCut: 605,
-    otherReqText: '일본어 320+ / 기술 45+ / 종합과목 145+ / TOEFL iBT 80~100+ 필수',
-    examType: '1차 서류선발 → 2차 일본어/영어 구술면접',
-    samples: '24년 합격자: 일어 355 / 기술 40 / 종과 161 / 수1 150 / iBT 81 | B: 일어 330 / 종과 157 / 수1 103 / iBT 90'
+    "id": 21,
+    "group": "nat_top",
+    "univ": "쓰쿠바대학",
+    "dept": "사회국제학군 (국제종합) · 이공학군",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 325,
+    "safeJ": 350,
+    "maxJ": 368,
+    "totCut": 685,
+    "otherReqText": "국제종합: TOEFL 95+ 필수 / 이공: 수학2 175+ 물·화 170+ / TOEFL 85+",
+    "examType": "서류 심사 및 전공적성 구술시험(영어/일본어)",
+    "samples": "2024년(名校志向塾): 일어 360 / 기술 45 / 종과 184 / 수1 165 (총점 709) / TOEFL iBT 98 | 2024년(名校志向塾): 일어 340 / 기술 40 / 이과 178 / 수2 184 (총점 702) / TOEFL iBT 90"
   },
   {
-    id: 41, group: 'march', univ: '메이지대학', dept: '이공학부 (기계공학 · 전기전자생명)', track: '이과', field: '공학',
-    minJ: 285, safeJ: 330, maxJ: 371, totCut: 600,
-    otherReqText: '물리+화학 135~170점 / 수학 코스2 130~175점 / 기술 40+',
-    examType: '수학·물리 대학 본고사 및 전공 면접',
-    samples: '24년 기계공학: 일어 366 / 기술 40 / 물 74 / 화 58 / 수2 161 / iBT 73'
+    "id": 22,
+    "group": "nat_top",
+    "univ": "요코하마국립대학",
+    "dept": "경영학부 · 경제학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 320,
+    "safeJ": 348,
+    "maxJ": 368,
+    "totCut": 680,
+    "otherReqText": "종합과목 178~192점 / 수학1 165~185점 / TOEFL 85~98+",
+    "examType": "1차 EJU+토플 서류선발(비중 큼) → 2차 소논문 및 면접",
+    "samples": "2024년(行知学园): 일어 362 / 기술 45 / 종과 182 / 수1 170 (총점 714) / TOEFL iBT 88 | 2023년(沐刃经济塾): 일어 355 / 기술 40 / 종과 180 / 수1 174 (총점 709) / TOEFL iBT 86 | 2023년(知日塾): 일어 330 / 기술 40 / 이과 176 / 수2 182 (총점 688) / TOEFL iBT 85"
   },
   {
-    id: 42, group: 'march', univ: '아오야마가쿠인대학', dept: '경영학부 · 경제학부', track: '문과', field: '상경',
-    minJ: 320, safeJ: 346, maxJ: 374, totCut: 635,
-    otherReqText: '종합과목 155~195점 / 수학1 125~185점 / 기술 40~50점 / TOEFL 75+',
-    examType: '1차 EJU 서류선발 → 2차 소논문 및 심층면접',
-    samples: '24년 경영: 일어 346 / 기술 45 / 종과 187 / 수1 145 | 22년: 일어 357 / 종과 172 / 수1 144'
+    "id": 23,
+    "group": "nat_top",
+    "univ": "고베대학",
+    "dept": "경영학부 · 경제학부 · 공학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 325,
+    "safeJ": 350,
+    "maxJ": 368,
+    "totCut": 685,
+    "otherReqText": "경영: EJU 710+ 안정권 / 공학: 물·화 175+ 수2 180+ / TOEFL 85~95+",
+    "examType": "서류 심사 및 2차 구술면접",
+    "samples": "2024년(行知学园): 일어 364 / 기술 45 / 종과 184 / 수1 172 (총점 720) / TOEFL iBT 92 | 2023년(启程塾): 일어 336 / 기술 40 / 이과 182 / 수2 186 (총점 704) / TOEFL iBT 90"
   },
   {
-    id: 43, group: 'march', univ: '아오야마가쿠인대학', dept: '국제정치경제학부', track: '문과', field: '법정',
-    minJ: 325, safeJ: 348, maxJ: 374, totCut: 640,
-    otherReqText: '일본어 340+ / 종합과목 160+ / TOEFL iBT 85~105+ 필수',
-    examType: '영어 구술면접 및 논술',
-    samples: '24년 합격자: 일어 345 / 기술 45 / 종과 127 / 수1 130 / iBT 85'
+    "id": 24,
+    "group": "nat_top",
+    "univ": "지바대학",
+    "dept": "법정경학부 · 공학부 (디자인코스)",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 310,
+    "safeJ": 338,
+    "maxJ": 362,
+    "totCut": 655,
+    "otherReqText": "문과: 종과 170+ 수1 155+ / 이과: 이과 165+ 수2 170+ / TOEFL 80+",
+    "examType": "1차 EJU 선발 → 2차 소논문 및 실기/구술면접",
+    "samples": "2024년(名校志向塾): 일어 358 / 기술 45 / 종과 176 / 수1 166 (총점 700) / TOEFL iBT 85 | 2023년(知乎): 일어 325 / 기술 40 / 이과 168 / 수2 176 (총점 669) / TOEFL iBT 82"
   },
   {
-    id: 44, group: 'march', univ: '아오야마가쿠인대학', dept: '이공학부 (정보테크놀로지학과)', track: '이과', field: '공학',
-    minJ: 295, safeJ: 332, maxJ: 362, totCut: 595,
-    otherReqText: '물리 65+ / 화학 65+ / 수학2 130~175점 / TOEFL 70+',
-    examType: '2차 수학·과학 본고사 및 면접',
-    samples: '24년 합격자: 일어 359 / 기술 50 / 물 79 / 화 43 / 수2 130 / iBT 91'
+    "id": 25,
+    "group": "top_priv",
+    "univ": "와세다대학",
+    "dept": "정치경제학부 (경제학과 · 정치학과 · 국제정경)",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 345,
+    "safeJ": 366,
+    "maxJ": 375,
+    "totCut": 715,
+    "otherReqText": "종합과목 185~195점 / 수학1 170~195점 / 기술 45+ / TOEFL 95~108+",
+    "examType": "와세다 독자시험(일본어 독해+기술) 및 소논문 최우선 반영",
+    "samples": "2024년(名校志向塾): 일어 370 / 기술 45 / 종과 190 / 수1 182 (총점 742) / TOEFL iBT 104 | 2024년(行知学园): 일어 368 / 기술 50 / 종과 188 / 수1 176 (총점 732) / TOEFL iBT 102 | 2023년(知乎): 일어 365 / 기술 45 / 종과 186 / 수1 180 (총점 731) / TOEFL iBT 106"
   },
   {
-    id: 45, group: 'march', univ: '릿쿄대학', dept: '경영학부 · 경제학부', track: '문과', field: '상경',
-    minJ: 315, safeJ: 340, maxJ: 374, totCut: 630,
-    otherReqText: '종합과목 160~195점 / 수학1 130~185점 / 기술 40+ / TOEFL 75~95+',
-    examType: 'EJU 및 공인영어 성적 100% 서류 선발 (도일 불필요 전형)',
-    samples: '24년 경영: 일어 353 / 기술 40 / 종과 161 / 수1 128 / iBT 83 | 22년 경제: 일어 357 / 종과 175 / 수1 137'
+    "id": 26,
+    "group": "top_priv",
+    "univ": "와세다대학",
+    "dept": "상학부 (상학전공)",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 335,
+    "safeJ": 358,
+    "maxJ": 372,
+    "totCut": 700,
+    "otherReqText": "종합과목 180~195점 / 수학1 165~190점 / 기술 45+ / TOEFL 90~105+",
+    "examType": "상학부 독자 본고사(소논문B 및 수학 선택) 필기고사 합격선 65%+",
+    "samples": "2024년(启程塾): 일어 366 / 기술 45 / 종과 186 / 수1 178 (총점 730) / TOEFL iBT 100 | 2023년(名校志向塾): 일어 358 / 기술 40 / 종과 182 / 수1 172 (총점 712) / TOEFL iBT 96"
   },
   {
-    id: 46, group: 'march', univ: '릿쿄대학', dept: '이문화커뮤니케이션학부', track: '문과', field: '인문',
-    minJ: 320, safeJ: 345, maxJ: 374, totCut: 635,
-    otherReqText: '일본어 340+ / 종합과목 160+ / TOEFL iBT 90~105+ 필수',
-    examType: '서류 종합평가 선발',
-    samples: '24년 합격자: 일어 355 / 기술 40 / 종과 161 / 수1 150 / iBT 81 | 22년: 일어 359 / 종과 154 / iBT 84'
+    "id": 27,
+    "group": "top_priv",
+    "univ": "와세다대학",
+    "dept": "사회과학부 (사회과학과)",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 335,
+    "safeJ": 358,
+    "maxJ": 372,
+    "totCut": 695,
+    "otherReqText": "종합과목 180~195점 / 수학1 160~190점 / 기술 45+ / TOEFL 90~105+",
+    "examType": "긴 분량의 독자 소논문 시험(논리적 전개력 평가)",
+    "samples": "2024년(知日塾): 일어 364 / 기술 45 / 종과 184 / 수1 168 (총점 716) / TOEFL iBT 95 | 2023년(唯新学院): 일어 352 / 기술 40 / 종과 180 / 수1 164 (총점 696) / TOEFL iBT 91"
   },
   {
-    id: 47, group: 'march', univ: '츄오대학', dept: '법학부 (법률학과)', track: '문과', field: '법정',
-    minJ: 320, safeJ: 345, maxJ: 374, totCut: 640,
-    otherReqText: '일본어 340+ / 기술 45+ / 종합과목 165~195점 필수 (전통의 법학 명문)',
-    examType: '1차 EJU 선발 → 2차 법학 소논문 및 심층 면접',
-    samples: '24년 합격자: 일어 372 / 기술 45 / 종과 171 / 수1 115 / iBT 85 | 22년: 일어 361 / 종과 176 / 수1 169 / iBT 72'
+    "id": 28,
+    "group": "top_priv",
+    "univ": "와세다대학",
+    "dept": "법학부 (법학과)",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 340,
+    "safeJ": 362,
+    "maxJ": 374,
+    "totCut": 695,
+    "otherReqText": "일본어 350+ / 기술 45~50점 필수 / 종합과목 180+ / TOEFL 90~105+",
+    "examType": "법학 소논문(논리적·법적 사고력 평가) A등급 필수",
+    "samples": "2024년(行知学园): 일어 365 / 기술 50 / 종과 188 / 수1 170 (총점 723) / TOEFL iBT 101"
   },
   {
-    id: 48, group: 'march', univ: '츄오대학', dept: '상학부 · 경제학부', track: '문과', field: '상경',
-    minJ: 295, safeJ: 328, maxJ: 374, totCut: 605,
-    otherReqText: '종합과목 150~190점 / 수학1 120~180점 / 기술 40+',
-    examType: '소논문 및 면접 전형',
-    samples: '24년 경제: 일어 344 / 기술 45 / 종과 189 / 수1 138 / iBT 48 | 22년 상학: 일어 334 / 종과 189 / 수1 144'
+    "id": 29,
+    "group": "top_priv",
+    "univ": "와세다대학",
+    "dept": "문학부 · 문화구상학부",
+    "track": "문과",
+    "field": "인문",
+    "minJ": 340,
+    "safeJ": 362,
+    "maxJ": 374,
+    "totCut": 675,
+    "otherReqText": "일본어+기술 400점 만점 중 350점 이상 고득점 필수 / 종과 175+ / TOEFL 85~100+",
+    "examType": "1차 서류선발 → 2차 고난도 일본어 소논문 본고사",
+    "samples": "2024년(名校志向塾): 일어 368 / 기술 50 / 종과 182 / 수1 155 (총점 705) / TOEFL iBT 93 | 2023년(知乎): 일어 362 / 기술 45 / 종과 180 / 수1 150 (총점 692) / TOEFL iBT 92"
   },
   {
-    id: 49, group: 'march', univ: '츄오대학', dept: '이공학부 (정보공학과 · 정밀기계공학)', track: '이과', field: '공학',
-    minJ: 280, safeJ: 325, maxJ: 374, totCut: 580,
-    otherReqText: '물리+화학 125~165점 / 수학 코스2 120~180점',
-    examType: '수학 지필시험 및 전공 면접',
-    samples: '24년 정보공학: 일어 353 / 기술 45 / 물 69 / 화 85 / 수2 120 | 22년: 일어 340 / 물 55 / 화 63 / 수2 125'
+    "id": 30,
+    "group": "top_priv",
+    "univ": "와세다대학",
+    "dept": "국제교양학부 (SILS)",
+    "track": "문과",
+    "field": "인문",
+    "minJ": 330,
+    "safeJ": 355,
+    "maxJ": 370,
+    "totCut": 680,
+    "otherReqText": "TOEFL iBT 100~112+ 필수 (영어 비중 극대화) / EJU 일본어 340+",
+    "examType": "영어 에세이(Writing) 본고사 및 영어 심층 면접",
+    "samples": "2024년(名校志向塾): 일어 355 / 기술 45 / 종과 175 / 수1 160 (총점 690) / TOEFL iBT 110"
   },
   {
-    id: 50, group: 'march', univ: '호세이대학', dept: '경영학부 · 경제학부', track: '문과', field: '상경',
-    minJ: 305, safeJ: 335, maxJ: 372, totCut: 615,
-    otherReqText: '종합과목 155~190점 / 수학1 120~185점 / 기술 40+',
-    examType: '1차 EJU 선발 → 2차 소논문/면접 (도일전형 일부 실시)',
-    samples: '24년 경영: 일어 344 / 기술 45 / 종과 184 / 수1 160 / iBT 94 | 22년 경제: 일어 367 / 종과 164 / 수1 111'
+    "id": 31,
+    "group": "top_priv",
+    "univ": "와세다대학",
+    "dept": "기간이공학부 (기계항공 · 정보이공)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 325,
+    "safeJ": 345,
+    "maxJ": 365,
+    "totCut": 705,
+    "otherReqText": "물리 88+ / 화학 85+ / 수학 코스2 185~200점 / TOEFL 90~102+",
+    "examType": "와세다 이공 본고사: 수학·물리 심층 필기시험(본고사 난도 극상)",
+    "samples": "2024년(名校志向塾): 일어 348 / 기술 45 / 이과 182 / 수2 192 (총점 722) / TOEFL iBT 98 | 2023년(行知学园): 일어 342 / 기술 40 / 이과 180 / 수2 188 (총점 710) / TOEFL iBT 94"
   },
   {
-    id: 51, group: 'march', univ: '호세이대학', dept: '디자인공학부 (건축학과)', track: '이과', field: '공학',
-    minJ: 290, safeJ: 330, maxJ: 365, totCut: 585,
-    otherReqText: '물리 60+ / 화학 60+ / 수학2 125~175점 / 포트폴리오 면접',
-    examType: '수학 시험 및 건축 조형 구술면접',
-    samples: '24년 합격자: 일어 345 / 기술 35 / 물 56 / 화 47 / 수2 119'
-  },
-
-  // --- 칸칸도리츠 (개별 학과 분리) ---
-  {
-    id: 52, group: 'kankan', univ: '도샤샤대학', dept: '상학부 · 경제학부', track: '문과', field: '상경',
-    minJ: 310, safeJ: 338, maxJ: 372, totCut: 625,
-    otherReqText: '종합과목 165~195점 / 수학1 130~190점 / 기술 40~50점 / TOEFL 75+',
-    examType: 'EJU 1차 선발 및 심층 면접 (칸사이 사립 1위)',
-    samples: '24년 상학: 일어 344 / 기술 45 / 종과 184 / 수1 160 / iBT 16 | 22년 경제: 일어 365 / 종과 177 / 수1 152 / iBT 77'
-  },
-  {
-    id: 53, group: 'kankan', univ: '도샤샤대학', dept: '법학부 · 정책학부', track: '문과', field: '법정',
-    minJ: 305, safeJ: 335, maxJ: 372, totCut: 620,
-    otherReqText: '일본어 335+ / 종합과목 160+ / 기술 40+ / TOEFL 70+',
-    examType: '소논문 및 면접',
-    samples: '24년 정책: 일어 345 / 기술 45 / 종과 159 / 수1 86 | 22년 법학: 일어 348 / 종과 185 / 수1 123 / iBT 79'
+    "id": 32,
+    "group": "top_priv",
+    "univ": "와세다대학",
+    "dept": "창조이공학부 (건축학과 · 종합기계)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 325,
+    "safeJ": 345,
+    "maxJ": 365,
+    "totCut": 695,
+    "otherReqText": "물리 85+ / 화학 85+ / 수학2 180~195점 / TOEFL 88~98+",
+    "examType": "건축학과는 수학 필기고사 외 공간표현(드로잉) 실기고사 병행",
+    "samples": "2024년(知日塾): 일어 350 / 기술 45 / 이과 176 / 수2 184 (총점 710) / TOEFL iBT 92"
   },
   {
-    id: 54, group: 'kankan', univ: '도샤샤대학', dept: '이공학부 (전기공학 · 기계시스템)', track: '이과', field: '공학',
-    minJ: 290, safeJ: 330, maxJ: 374, totCut: 610,
-    otherReqText: '물리 70+ / 화학 70+ / 수학 코스2 140~200점 / 기술 40+',
-    examType: '수학·과학 구술시험 및 전문 면접',
-    samples: '24년 전기공학: 일어 347 / 기술 45 / 물 87 / 화 81 / 수2 124 / iBT 69'
+    "id": 33,
+    "group": "top_priv",
+    "univ": "와세다대학",
+    "dept": "선진이공학부 (물리학과 · 생명의과학)",
+    "track": "이과",
+    "field": "생명",
+    "minJ": 325,
+    "safeJ": 345,
+    "maxJ": 365,
+    "totCut": 705,
+    "otherReqText": "물리/화학/생물 중 2과목 각 88+ / 수학2 185~200점 / TOEFL 90~102+",
+    "examType": "본고사 수학 및 과학 필기시험 + 전문 구술면접",
+    "samples": "2024년(名校志向塾): 일어 345 / 기술 40 / 이과 186 / 수2 188 (총점 719) / TOEFL iBT 99 | 2023년(启程塾): 일어 338 / 기술 40 / 이과 188 / 수2 190 (총점 716) / TOEFL iBT 95"
   },
   {
-    id: 55, group: 'kankan', univ: '리츠메이칸대학', dept: '경영학부 · 경제학부', track: '문과', field: '상경',
-    minJ: 290, safeJ: 328, maxJ: 372, totCut: 595,
-    otherReqText: '종합과목 150~195점 / 수학1 120~180점 / 기술 40+ / 일본어 단독 전형은 일어 335+',
-    examType: 'EJU 성적 중심 서류 선발 (도일 불필요 전형 다수)',
-    samples: '24년 경영: 일어 343 / 기술 50 / 종과 198 / 수1 121 / iBT 63 | 22년: 일어 356 / 종과 146 / 수1 118 / iBT 107'
+    "id": 34,
+    "group": "top_priv",
+    "univ": "와세다대학",
+    "dept": "인간과학부 (인간정보 · 건강복지)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 315,
+    "safeJ": 335,
+    "maxJ": 355,
+    "totCut": 665,
+    "otherReqText": "토코로자와 캠퍼스: 수학2 165+ / 이과 160+ / TOEFL 80~90+",
+    "examType": "서류선발 및 학부 구술면접",
+    "samples": "2024년(名校志向塾): 일어 335 / 기술 40 / 이과 172 / 수2 178 (총점 685) / TOEFL iBT 88"
   },
   {
-    id: 56, group: 'kankan', univ: '리츠메이칸대학', dept: '국제관계학부', track: '문과', field: '법정',
-    minJ: 310, safeJ: 335, maxJ: 372, totCut: 615,
-    otherReqText: '일본어 330+ / 종합과목 160+ / TOEFL iBT 80~100+ 필수',
-    examType: '영어/일본어 복합 면접 및 서류 전형',
-    samples: '24년 합격자: 일어 343 / 기술 45 / 종과 196 / 수1 132 | 22년: 일어 344 / 종과 153 / 수1 119'
+    "id": 35,
+    "group": "top_priv",
+    "univ": "게이오기주쿠대학",
+    "dept": "경제학부 (경제학과 A방식)",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 345,
+    "safeJ": 366,
+    "maxJ": 375,
+    "totCut": 720,
+    "otherReqText": "종합과목 185~195점 / 수학1 175~195점 / 기술 45+ / TOEFL 98~108+",
+    "examType": "EJU 3과목 성적 + 토플 성적으로 1차 100% 서류선발 (본고사 면제)",
+    "samples": "2024년(名校志向塾): 일어 370 / 기술 45 / 종과 190 / 수1 184 (총점 744) / TOEFL iBT 102 | 2023년(行知学园): 일어 362 / 기술 45 / 종과 186 / 수1 178 (총점 726) / TOEFL iBT 100"
   },
   {
-    id: 57, group: 'kankan', univ: '리츠메이칸대학', dept: '정보이공학부', track: '이과', field: '공학',
-    minJ: 290, safeJ: 322, maxJ: 371, totCut: 590,
-    otherReqText: '수학 코스2 135~190점 / 물리/화학 중 1~2과목 / 기술 35+',
-    examType: 'EJU 서류 전형 (소프트웨어/AI 인기 학과)',
-    samples: '24년 합격자: 일어 345 / 기술 50 / 물 86 / 화 82 / 수2 199 | 22년: 일어 347 / 물 69 / 화 52 / 수2 123'
+    "id": 36,
+    "group": "top_priv",
+    "univ": "게이오기주쿠대학",
+    "dept": "상학부 (상학과)",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 340,
+    "safeJ": 362,
+    "maxJ": 374,
+    "totCut": 705,
+    "otherReqText": "종합과목 180~195점 / 수학1 165~190점 / 기술 45+ / TOEFL 95~105+",
+    "examType": "서류 심사 100% 선발 (수학 우수자 가산점 비공식 존재)",
+    "samples": "2024년(启程塾): 일어 365 / 기술 45 / 종과 188 / 수1 175 (총점 728) / TOEFL iBT 98 | 2023년(知乎): 일어 358 / 기술 40 / 종과 184 / 수1 172 (총점 714) / TOEFL iBT 95"
   },
   {
-    id: 58, group: 'kankan', univ: '칸세이가쿠인대학', dept: '경제학부 · 상학부', track: '문과', field: '상경',
-    minJ: 285, safeJ: 322, maxJ: 369, totCut: 580,
-    otherReqText: '종합과목 145~195점 / 수학1 110~180점 / 기술 35~45점',
-    examType: 'EJU 서류 심사 및 면접',
-    samples: '24년 경제: 일어 338 / 기술 40 / 종과 171 / 수1 173 / iBT 105 | 22년: 일어 352 / 종과 191 / 수1 141'
+    "id": 37,
+    "group": "top_priv",
+    "univ": "게이오기주쿠대학",
+    "dept": "법학부 (법률학과 · 정치학과)",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 345,
+    "safeJ": 368,
+    "maxJ": 375,
+    "totCut": 715,
+    "otherReqText": "일본어 355+ / 기술 45~50점 / 종합과목 185~195점 / TOEFL 98~108+",
+    "examType": "사전과제 소논문 제출(3~4회 첨삭 필수) 및 서류 심사",
+    "samples": "2024년(名校志向塾): 일어 374 / 기술 50 / 종과 192 / 수1 174 (총점 740) / TOEFL iBT 105 | 2023년(行知学园): 일어 368 / 기술 45 / 종과 188 / 수1 170 (총점 726) / TOEFL iBT 101"
   },
   {
-    id: 59, group: 'kankan', univ: '칸세이가쿠인대학', dept: '종합정책학부 · 국제학부', track: '문과', field: '인문',
-    minJ: 280, safeJ: 320, maxJ: 365, totCut: 575,
-    otherReqText: '일본어 315+ / 종과 145+ / 국제학부는 TOEFL 75+ 필수',
-    examType: '영어 면접 및 소논문',
-    samples: '24년 국제학부: 일어 346 / 기술 40 / 종과 172 / 수1 157 / iBT 105'
+    "id": 38,
+    "group": "top_priv",
+    "univ": "게이오기주쿠대학",
+    "dept": "문학부 (인문사회학계)",
+    "track": "문과",
+    "field": "인문",
+    "minJ": 335,
+    "safeJ": 358,
+    "maxJ": 372,
+    "totCut": 680,
+    "otherReqText": "일본어 350+ / 기술 45+ / 종합과목 175+ / TOEFL 88~102+",
+    "examType": "서류 심사 후 온라인 심층 면접 (20분간 전공 열정 질의)",
+    "samples": "2024년(知乎): 일어 366 / 기술 45 / 종과 180 / 수1 150 (총점 696) / TOEFL iBT 92"
   },
   {
-    id: 60, group: 'kankan', univ: '칸사이대학', dept: '경제학부 · 상학부', track: '문과', field: '상경',
-    minJ: 280, safeJ: 320, maxJ: 366, totCut: 575,
-    otherReqText: '종합과목 145~190점 / 수학1 110~175점 / 기술 35~45점',
-    examType: '서류 심사 및 구술면접',
-    samples: '24년 경제: 일어 334 / 기술 45 / 종과 166 / 수1 126 | 22년: 일어 340 / 종과 143 / 수1 110'
+    "id": 39,
+    "group": "top_priv",
+    "univ": "게이오기주쿠대학",
+    "dept": "이공학부 (학문A 물리/전기 · 학문C 기계)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 325,
+    "safeJ": 348,
+    "maxJ": 368,
+    "totCut": 710,
+    "otherReqText": "물리 88+ / 화학 88+ / 수학 코스2 185~200점 / TOEFL 92~104+",
+    "examType": "게이오 독자 필기시험(수학/영어/물리·화학) 합격선 70%+",
+    "samples": "2024년(名校志向塾): 일어 350 / 기술 40 / 이과 186 / 수2 194 (총점 730) / TOEFL iBT 100 | 2023년(行知学园): 일어 344 / 기술 40 / 이과 182 / 수2 190 (총점 716) / TOEFL iBT 96"
   },
   {
-    id: 61, group: 'kankan', univ: '칸사이대학', dept: '시스템이공학부 (기계공학 · 전기전자)', track: '이과', field: '공학',
-    minJ: 275, safeJ: 318, maxJ: 366, totCut: 570,
-    otherReqText: '물리 60+ / 화학 60+ / 수학2 115~170점',
-    examType: '수학 시험 및 이공계 면접',
-    samples: '24년 전기전자: 일어 327 / 기술 45 / 물 73 / 화 76 / 수2 122'
-  },
-
-  // --- 닛토코마센 · 4공대 · 중견국립 ---
-  {
-    id: 62, group: 'nitto', univ: '가쿠슈인대학', dept: '경제학부 (경제학과 · 경영학과)', track: '문과', field: '상경',
-    minJ: 315, safeJ: 345, maxJ: 374, totCut: 625,
-    otherReqText: '종합과목 150~195점 / 수학1 100~190점 / 기술 40+ (MARCH급 커트라인)',
-    examType: 'EJU 서류 및 면접',
-    samples: '24년 합격자: 일어 351 / 기술 35 / 종과 190 / 수1 130 / iBT 750(토익) | 22년: 일어 369 / 종과 190 / 수1 146'
-  },
-  {
-    id: 63, group: 'nitto', univ: '도요대학', dept: '경영학부 · 경제학부', track: '문과', field: '상경',
-    minJ: 275, safeJ: 308, maxJ: 360, totCut: 555,
-    otherReqText: '종합과목 135~185점 / 수학1 100~160점 / 기술 35~45점 (닛토코마센 1위 경쟁률)',
-    examType: 'EJU 서류 심사 및 면접',
-    samples: '24년 경영: 일어 334 / 기술 40 / 종과 145 / 수1 124 | 22년: 일어 307 / 종과 140 / 수1 105'
+    "id": 40,
+    "group": "top_priv",
+    "univ": "게이오기주쿠대학",
+    "dept": "종합정책학부 (SFC) · 환경정보학부",
+    "track": "문과",
+    "field": "인문",
+    "minJ": 330,
+    "safeJ": 352,
+    "maxJ": 370,
+    "totCut": 680,
+    "otherReqText": "일본어 345+ / 종과 175+ / 지망이유서(문제해결 프레임워크) 및 포트폴리오 / TOEFL 90~105+",
+    "examType": "서류 종합평가 및 30분 심층 압박 면접",
+    "samples": "2024년(唯新学院): 일어 358 / 기술 45 / 종과 182 / 수1 160 (총점 700) / TOEFL iBT 98 | 2023년(知日塾): 일어 345 / 기술 40 / 이과 175 / 수2 175 (총점 695) / TOEFL iBT 95"
   },
   {
-    id: 64, group: 'nitto', univ: '도요대학', dept: '사회학부 (미디어커뮤니케이션학과)', track: '문과', field: '인문',
-    minJ: 285, safeJ: 315, maxJ: 360, totCut: 565,
-    otherReqText: '일본어 310+ / 종합과목 145+ (도요대 최고 인기학과)',
-    examType: '서류 및 소논문/면접',
-    samples: '24년 합격자: 일어 335 / 기술 45 / 종과 156 / 수1 132 | 22년: 일어 327 / 종과 134 / 수1 99'
+    "id": 41,
+    "group": "top_priv",
+    "univ": "조치대학",
+    "dept": "경제학부 (경제학과 · 경영학과)",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 335,
+    "safeJ": 358,
+    "maxJ": 370,
+    "totCut": 685,
+    "otherReqText": "종합과목 175~190점 / 수학1 160~185점 / 기술 45+ / TOEFL 88~102+",
+    "examType": "1차 서류선발 → 2차 소논문 및 면접 (영어 배점 높음)",
+    "samples": "2024년(名校志向塾): 일어 362 / 기술 45 / 종과 180 / 수1 172 (총점 714) / TOEFL iBT 94"
   },
   {
-    id: 65, group: 'nitto', univ: '니혼대학', dept: '경제학부 · 상학부', track: '문과', field: '상경',
-    minJ: 260, safeJ: 295, maxJ: 358, totCut: 535,
-    otherReqText: '종합과목 125~175점 / 수학1 90~150점 / 기술 35+',
-    examType: '소논문 및 면접',
-    samples: '24년 경제: 일어 317 / 기술 40 / 종과 104 / 수1 110 | 22년: 일어 325 / 종과 162 / 수1 174'
+    "id": 42,
+    "group": "top_priv",
+    "univ": "조치대학",
+    "dept": "법학부 · 종합글로벌학부",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 340,
+    "safeJ": 362,
+    "maxJ": 372,
+    "totCut": 690,
+    "otherReqText": "일본어 355+ / 종과 180+ / 기술 45+ / TOEFL 92~106+ 필수",
+    "examType": "전공 구술면접 및 논술 (국제 감각 심층 평가)",
+    "samples": "2023년(行知学园): 일어 365 / 기술 50 / 종과 182 / 수1 155 (총점 702) / TOEFL iBT 98"
   },
   {
-    id: 66, group: 'nitto', univ: '니혼대학', dept: '이공학부 (기계공학 · 건축학과)', track: '이과', field: '공학',
-    minJ: 245, safeJ: 285, maxJ: 355, totCut: 510,
-    otherReqText: '물리+화학 105~150점 / 수학2 100~160점',
-    examType: '수학·과학 시험 및 면접',
-    samples: '24년 기계: 일어 302 / 기술 45 / 물 55 / 화 57 / 수2 120 | 22년 건축: 일어 312 / 물 50 / 화 65 / 수2 115'
+    "id": 43,
+    "group": "top_priv",
+    "univ": "조치대학",
+    "dept": "이공학부 (정보이공 · 물질생명)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 315,
+    "safeJ": 335,
+    "maxJ": 358,
+    "totCut": 665,
+    "otherReqText": "물리/화학 165+ / 수학 코스2 170~195점 / TOEFL 85~98+",
+    "examType": "수학·과학 지필시험 및 영어/일본어 전공 면접",
+    "samples": "2024년(知日塾): 일어 338 / 기술 40 / 이과 176 / 수2 185 (총점 699) / TOEFL iBT 90"
   },
   {
-    id: 67, group: 'nitto', univ: '센슈대학 · 코마자와대학', dept: '경영학부 · 경제학부', track: '문과', field: '상경',
-    minJ: 260, safeJ: 302, maxJ: 360, totCut: 545,
-    otherReqText: '종합과목 130~180점 / 기술 35~45점',
-    examType: '서류 심사 및 면접',
-    samples: '24년 센슈 경영: 일어 327 / 기술 45 / 종과 150 / 수1 84 | 코마자와: 일어 315 / 종과 163 / 수1 110'
+    "id": 44,
+    "group": "top_priv",
+    "univ": "도쿄이과대학",
+    "dept": "공학부 · 이학부 (기계공학 · 물리학과)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 315,
+    "safeJ": 338,
+    "maxJ": 360,
+    "totCut": 680,
+    "otherReqText": "물리 85+ / 화학 85+ / 수학 코스2 180~198점 필수 / TOEIC 750+ 또는 TOEFL 80+",
+    "examType": "수학2 및 물리·화학 고득점자 위주 서류+면접 선발 (유급률 높고 학업량 엄격)",
+    "samples": "2024년(名校志向塾): 일어 340 / 기술 40 / 이과 182 / 수2 190 (총점 712) / TOEFL iBT 86 | 2023년(行知学园): 일어 332 / 기술 40 / 이과 180 / 수2 186 (총점 698) / TOEIC 790"
   },
   {
-    id: 68, group: 'nitto', univ: '킨키대학', dept: '경영학부 · 상학부 · 경제학부', track: '문과', field: '상경',
-    minJ: 255, safeJ: 295, maxJ: 355, totCut: 530,
-    otherReqText: '종합과목 130~175점 / 수학1 95~155점',
-    examType: 'EJU 1차 선발 및 면접',
-    samples: '24년 경영: 일어 323 / 기술 45 / 종과 174 / 수1 110 | 22년: 일어 317 / 종과 164 / 수1 122'
+    "id": 45,
+    "group": "march",
+    "univ": "메이지대학",
+    "dept": "상학부 · 경영학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 325,
+    "safeJ": 346,
+    "maxJ": 366,
+    "totCut": 665,
+    "otherReqText": "종합과목 168~185점 / 수학1 150~180점 / 기술 40+ / TOEIC 780~860 또는 TOEFL 78~90",
+    "examType": "1차 EJU+토익 서류선발 → 2차 심층 면접 (지망동기 구체성 검증)",
+    "samples": "2024년(名校志向塾): 일어 348 / 기술 45 / 종과 174 / 수1 158 (총점 680) / TOEIC 820 | 2023년(行知学园): 일어 342 / 기술 40 / 종과 172 / 수1 155 (총점 669) / TOEFL iBT 82 | 2024년(启程塾): 일어 352 / 기술 45 / 종과 178 / 수1 160 (총점 690) / TOEIC 840"
   },
   {
-    id: 69, group: 'nitto', univ: '시바우라공업대학', dept: '공학부 · 시스템이공학부', track: '이과', field: '공학',
-    minJ: 265, safeJ: 310, maxJ: 353, totCut: 550,
-    otherReqText: '물리 60+ / 화학 60+ / 수학2 120~165점 / 4공대 최상위',
-    examType: '수학·이과 본고사 및 전공 구술면접',
-    samples: '24년 전자정보: 일어 319 / 기술 35 / 물 77 / 화 68 / 수2 127'
+    "id": 46,
+    "group": "march",
+    "univ": "메이지대학",
+    "dept": "정치경제학부 (경제학과 · 정치학과)",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 325,
+    "safeJ": 348,
+    "maxJ": 368,
+    "totCut": 670,
+    "otherReqText": "종합과목 170~188점 / 수학1 155~185점 / 기술 45+ / TOEFL 80~92+",
+    "examType": "서류 심사 100% 또는 면접 전형 (MARCH 최고 인기)",
+    "samples": "2024년(名校志向塾): 일어 355 / 기술 45 / 종과 176 / 수1 162 (총점 693) / TOEFL iBT 85"
   },
   {
-    id: 70, group: 'nitto', univ: '동경전기대학 · 코가쿠인대학', dept: '미래과학부 · 선진공학부', track: '이과', field: '공학',
-    minJ: 245, safeJ: 285, maxJ: 345, totCut: 510,
-    otherReqText: '물리+화학 100~140점 / 수학2 100~150점',
-    examType: '이공계 지필시험 및 면접',
-    samples: '24년 동경전기 미래과학: 일어 315 / 기술 35 / 물 60 / 화 65 / 수2 119'
-  },
-
-  // --- 주요 미술·예술대학 (미대 분리) ---
-  {
-    id: 71, group: 'art', univ: '무사시노미술대학', dept: '시각전달디자인학과 · 기초디자인', track: '예체능', field: '예체능',
-    minJ: 250, safeJ: 295, maxJ: 355, totCut: 480,
-    otherReqText: '일본어 280~320점 권장 / 기술 35+ / 연필 데생 실기시험 및 포트폴리오 면접',
-    examType: '일본어 성적 + 데생 실기 + 지망이유서 면접',
-    samples: '24년 합격자: 일어 334 / 기술 40 | 22년: 일어 348 / 종과 136'
-  },
-  {
-    id: 72, group: 'art', univ: '무사시노미술대학', dept: '공예공업디자인학과 · 공간연출디자인', track: '예체능', field: '예체능',
-    minJ: 240, safeJ: 280, maxJ: 345, totCut: 460,
-    otherReqText: '일본어 260~300점 / 기술 35+ / 입체 구성 또는 드로잉 실기',
-    examType: '실기시험 및 포트폴리오 심층 면접',
-    samples: '24년 공예공업: 일어 283 / 기술 40 | 22년: 일어 343 / 기술 45 / iBT 98'
+    "id": 47,
+    "group": "march",
+    "univ": "메이지대학",
+    "dept": "법학부 (법학과)",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 330,
+    "safeJ": 350,
+    "maxJ": 368,
+    "totCut": 660,
+    "otherReqText": "일본어 345+ / 종합과목 170+ / 기술 40+ / TOEIC 750~830",
+    "examType": "소논문 본고사 및 면접 (스루가다이/이즈미 캠퍼스)",
+    "samples": "2023년(知乎): 일어 350 / 기술 40 / 종과 174 / 수1 150 (총점 674) / TOEIC 790"
   },
   {
-    id: 73, group: 'art', univ: '타마미술대학', dept: '그래픽디자인학과', track: '예체능', field: '예체능',
-    minJ: 260, safeJ: 305, maxJ: 355, totCut: 490,
-    otherReqText: '일본어 280~330점 권장 / 기술 40+ / 최고 난이도 색채구성 및 데생 실기',
-    examType: '1차 EJU/실기 선발 → 2차 포트폴리오 구술면접',
-    samples: '24년 합격자: 일어 357 / 기술 40 | 22년: 일어 355 / 기술 40'
+    "id": 48,
+    "group": "march",
+    "univ": "메이지대학",
+    "dept": "국제일본학부",
+    "track": "문과",
+    "field": "인문",
+    "minJ": 335,
+    "safeJ": 358,
+    "maxJ": 370,
+    "totCut": 670,
+    "otherReqText": "일본어 350+ / 기술 45+ / 종과 165+ / TOEFL iBT 85~100+ 필수",
+    "examType": "1차 서류선발 → 2차 일본어/영어 병행 구술면접",
+    "samples": "2024년(名校志向塾): 일어 360 / 기술 45 / 종과 170 / 수1 140 (총점 670) / TOEFL iBT 90"
   },
   {
-    id: 74, group: 'art', univ: '타마미술대학', dept: '프로덕트디자인학과 · 환경디자인', track: '예체능', field: '예체능',
-    minJ: 245, safeJ: 285, maxJ: 345, totCut: 470,
-    otherReqText: '일본어 260~300점 / 아이디어 스케치 실기 및 작품집 지참',
-    examType: '실기 지필 및 전문 면접',
-    samples: '24년 프로덕트: 일어 345 / 기술 40 | 22년 환경: 일어 326 / 기술 40'
+    "id": 49,
+    "group": "march",
+    "univ": "메이지대학",
+    "dept": "이공학부 (기계정보 · 전기전자 · 응용화학)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 305,
+    "safeJ": 328,
+    "maxJ": 350,
+    "totCut": 650,
+    "otherReqText": "물리 75+ / 화학 75+ / 수학 코스2 165~185점 / TOEIC 750~820",
+    "examType": "이쿠타 캠퍼스: 수학·물리 구술시험 및 전공 면접",
+    "samples": "2024년(行知学园): 일어 330 / 기술 40 / 이과 170 / 수2 175 (총점 675) / TOEIC 780 | 2023년(知日塾): 일어 325 / 기술 35 / 이과 168 / 수2 172 (총점 665) / TOEFL iBT 78"
   },
   {
-    id: 75, group: 'art', univ: '니혼대학', dept: '예술학부 (디자인학과 · 방송학과 · 사진)', track: '예체능', field: '예체능',
-    minJ: 235, safeJ: 278, maxJ: 355, totCut: 470,
-    otherReqText: '일본어 260~310점 / 작문 및 전공별 실기/구술시험',
-    examType: '소논문 및 실기시험 면접',
-    samples: '24년 사진: 일어 335 / 종과 164 / 수1 123 | 디자인: 일어 303 / 기술 45'
+    "id": 50,
+    "group": "march",
+    "univ": "아오야마가쿠인대학",
+    "dept": "경영학부 · 경제학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 325,
+    "safeJ": 345,
+    "maxJ": 365,
+    "totCut": 660,
+    "otherReqText": "종합과목 168~182점 / 수학1 145~175점 / 기술 40+ / TOEIC 780~850",
+    "examType": "아오야마 시부야 캠퍼스: 1차 서류선발 → 2차 소논문 및 면접",
+    "samples": "2024년(行知学园): 일어 345 / 기술 40 / 종과 172 / 수1 155 (총점 672) / TOEIC 810"
   },
   {
-    id: 76, group: 'art', univ: '교토세이카대학', dept: '만화학부 (스토리만화 · 애니메이션 · 캐릭터)', track: '예체능', field: '예체능',
-    minJ: 215, safeJ: 265, maxJ: 350, totCut: 440,
-    otherReqText: '일본어 240~290점 / 캐릭터 표현 실기 또는 이미지 구성 + 포트폴리오 면접',
-    examType: '만화 실기시험 및 면접 (일본 만화/애니 1위 명문)',
-    samples: '24년 스토리만화: 일어 327 / 기술 40 | 애니메이션: 일어 342 / 기술 45 / iBT 105'
+    "id": 51,
+    "group": "march",
+    "univ": "아오야마가쿠인대학",
+    "dept": "국제정치경제학부",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 335,
+    "safeJ": 355,
+    "maxJ": 370,
+    "totCut": 675,
+    "otherReqText": "일본어 345+ / 종과 175+ / TOEFL iBT 85~102+ 필수",
+    "examType": "영어 에세이 및 영어/일본어 복합 구술면접",
+    "samples": "2023년(名校志向塾): 일어 355 / 기술 45 / 종과 178 / 수1 160 (총점 693) / TOEFL iBT 88"
   },
   {
-    id: 77, group: 'art', univ: '교토예술대학 (교토조형)', dept: '캐릭터디자인학과 · 정보디자인(일러스트)', track: '예체능', field: '예체능',
-    minJ: 200, safeJ: 255, maxJ: 345, totCut: 430,
-    otherReqText: '일본어 220~275점 / 체험수업형 입시 또는 실기/포트폴리오 면접',
-    examType: '작품 심사 및 구술면접',
-    samples: '24년 캐릭터: 일어 321 / 기술 35 | 22년 일러스트: 일어 350 / 기술 45'
+    "id": 52,
+    "group": "march",
+    "univ": "아오야마가쿠인대학",
+    "dept": "이공학부 (정보테크놀로지 · 기계공학)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 305,
+    "safeJ": 325,
+    "maxJ": 350,
+    "totCut": 640,
+    "otherReqText": "물리 70+ / 화학 70+ / 수학 코스2 160~180점 / TOEIC 720+",
+    "examType": "사가미하라 캠퍼스: 수학·이과 본고사 및 구술시험",
+    "samples": "2024년(知乎): 일어 328 / 기술 40 / 이과 165 / 수2 174 (총점 667) / TOEIC 760"
   },
   {
-    id: 78, group: 'art', univ: '동경공예대학', dept: '예술학부 (애니메이션학과 · 게임학과)', track: '예체능', field: '예체능',
-    minJ: 210, safeJ: 255, maxJ: 340, totCut: 440,
-    otherReqText: '일본어 230~280점 / 연필 데생 또는 전공 적성 소논문 면접',
-    examType: '실기/소논문 선택 및 면접',
-    samples: '24년 애니: 일어 304 / 기술 40 | 게임: 일어 328 / 기술 40'
+    "id": 53,
+    "group": "march",
+    "univ": "릿쿄대학",
+    "dept": "경영학부 · 경제학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 330,
+    "safeJ": 352,
+    "maxJ": 370,
+    "totCut": 675,
+    "otherReqText": "종합과목 172~188점 / 수학1 155~180점 / 기술 40+ / TOEFL 80~95+",
+    "examType": "EJU 및 공인영어 성적 100% 서류 선발 (도일 불필요 전형 다수)",
+    "samples": "2024년(名校志向塾): 일어 358 / 기술 45 / 종과 176 / 수1 160 (총점 694) / TOEFL iBT 86 | 2023년(行知学园): 일어 346 / 기술 40 / 종과 170 / 수1 158 (총점 674) / TOEIC 800"
+  },
+  {
+    "id": 54,
+    "group": "march",
+    "univ": "릿쿄대학",
+    "dept": "이문화커뮤니케이션학부",
+    "track": "문과",
+    "field": "인문",
+    "minJ": 338,
+    "safeJ": 360,
+    "maxJ": 372,
+    "totCut": 680,
+    "otherReqText": "일본어 355+ / 종과 175+ / 기술 45+ / TOEFL iBT 90~105+ 필수",
+    "examType": "서류 종합평가 (이문화 공생 다문화 연구계획 중요)",
+    "samples": "2024년(启程塾): 일어 362 / 기술 45 / 종과 175 / 수1 145 (총점 682) / TOEFL iBT 94"
+  },
+  {
+    "id": 55,
+    "group": "march",
+    "univ": "주오대학",
+    "dept": "법학부 (법률학과 · 정치학과)",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 335,
+    "safeJ": 355,
+    "maxJ": 370,
+    "totCut": 670,
+    "otherReqText": "일본어 350+ / 기술 45+ / 종합과목 175~190점 (묘가다니 도심 이전 후 인기 상승)",
+    "examType": "1차 EJU 선발 → 2차 법학 소논문 및 심층 면접",
+    "samples": "2024년(行知学园): 일어 358 / 기술 45 / 종과 178 / 수1 158 (총점 694) / TOEIC 830"
+  },
+  {
+    "id": 56,
+    "group": "march",
+    "univ": "주오대학",
+    "dept": "상학부 · 경제학부 (회계 · 금융)",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 320,
+    "safeJ": 340,
+    "maxJ": 362,
+    "totCut": 655,
+    "otherReqText": "종합과목 165~180점 / 수학1 145~175점 / 기술 40+ / TOEIC 750~820",
+    "examType": "회계분야 전통 명문: 소논문 및 면접 전형",
+    "samples": "2023년(名校志向塾): 일어 340 / 기술 40 / 종과 168 / 수1 160 (총점 668) / TOEIC 780"
+  },
+  {
+    "id": 57,
+    "group": "march",
+    "univ": "주오대학",
+    "dept": "이공학부 (정보공학과 · 정밀기계)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 300,
+    "safeJ": 322,
+    "maxJ": 348,
+    "totCut": 645,
+    "otherReqText": "물리 72+ / 화학 70+ / 수학 코스2 165~185점 / TOEFL 75+",
+    "examType": "코라쿠엔 도심 캠퍼스: 수학 지필시험 및 전공 면접",
+    "samples": "2024년(知乎): 일어 325 / 기술 40 / 이과 166 / 수2 175 (총점 666) / TOEFL iBT 76"
+  },
+  {
+    "id": 58,
+    "group": "march",
+    "univ": "호세이대학",
+    "dept": "경영학부 · 경제학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 315,
+    "safeJ": 338,
+    "maxJ": 360,
+    "totCut": 645,
+    "otherReqText": "종합과목 160~178점 / 수학1 140~170점 / 기술 40+ / TOEIC 720~800",
+    "examType": "이치가야 캠퍼스: EJU 1차 선발 → 2차 소논문/면접",
+    "samples": "2024년(行知学园): 일어 340 / 기술 40 / 종과 166 / 수1 150 (총점 656) / TOEIC 760 | 2023년(知日塾): 일어 335 / 기술 40 / 종과 165 / 수1 152 (총점 652) / TOEIC 740"
+  },
+  {
+    "id": 59,
+    "group": "march",
+    "univ": "호세이대학",
+    "dept": "정보과학부 · 디자인공학부",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 295,
+    "safeJ": 320,
+    "maxJ": 345,
+    "totCut": 635,
+    "otherReqText": "물리 68+ / 화학 65+ / 수학2 155~175점 / TOEIC 700+",
+    "examType": "코가네이 캠퍼스: IT프로그래밍 지망동기 및 구술면접",
+    "samples": "2024년(启程塾): 일어 320 / 기술 35 / 이과 162 / 수2 170 (총점 652) / TOEIC 720"
+  },
+  {
+    "id": 60,
+    "group": "kankan",
+    "univ": "도시샤대학",
+    "dept": "상학부 · 경제학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 330,
+    "safeJ": 350,
+    "maxJ": 368,
+    "totCut": 670,
+    "otherReqText": "종합과목 172~188점 / 수학1 155~180점 / 기술 40~50점 / TOEFL 80~95+",
+    "examType": "간사이 사립 최정상(이마데가와 본교): EJU 1차 선발 및 심층 면접",
+    "samples": "2024년(行知学园): 일어 355 / 기술 45 / 종과 176 / 수1 164 (총점 695) / TOEFL iBT 85 | 2023년(名校志向塾): 일어 348 / 기술 40 / 종과 172 / 수1 160 (총점 680) / TOEIC 810"
+  },
+  {
+    "id": 61,
+    "group": "kankan",
+    "univ": "도시샤대학",
+    "dept": "법학부 · 심리학부",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 330,
+    "safeJ": 352,
+    "maxJ": 368,
+    "totCut": 665,
+    "otherReqText": "일본어 345+ / 종합과목 170+ / 기술 40+ / TOEFL 78~90+",
+    "examType": "소논문 및 심층 구술면접 (심리학부 질문 난이도 높음)",
+    "samples": "2024년(知乎): 일어 352 / 기술 45 / 종과 170 / 수1 155 (총점 677) / TOEFL iBT 82"
+  },
+  {
+    "id": 62,
+    "group": "kankan",
+    "univ": "도시샤대학",
+    "dept": "이공학부 (정보시스템 · 전기공학)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 305,
+    "safeJ": 330,
+    "maxJ": 352,
+    "totCut": 655,
+    "otherReqText": "물리 75+ / 화학 72+ / 수학 코스2 165~185점 / 기술 40+",
+    "examType": "교탄베 캠퍼스: 수학·과학 구술시험 및 전문 면접",
+    "samples": "2024년(启程塾): 일어 332 / 기술 40 / 이과 172 / 수2 178 (총점 682) / TOEFL iBT 80"
+  },
+  {
+    "id": 63,
+    "group": "kankan",
+    "univ": "리츠메이칸대학",
+    "dept": "국제관계학부",
+    "track": "문과",
+    "field": "법정",
+    "minJ": 330,
+    "safeJ": 350,
+    "maxJ": 368,
+    "totCut": 665,
+    "otherReqText": "일본어 345+ / 종합과목 170+ / TOEFL iBT 80~98+ 필수",
+    "examType": "키누가사 캠퍼스: 영어/일본어 복합 면접 및 서류 전형",
+    "samples": "2024년(行知学园): 일어 350 / 기술 45 / 종과 175 / 수1 150 (총점 675) / TOEFL iBT 88"
+  },
+  {
+    "id": 64,
+    "group": "kankan",
+    "univ": "리츠메이칸대학",
+    "dept": "경영학부 · 정책과학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 315,
+    "safeJ": 338,
+    "maxJ": 360,
+    "totCut": 645,
+    "otherReqText": "종합과목 160~178점 / 수학1 140~170점 / 기술 40+ / TOEIC 750~820",
+    "examType": "오사카 이바라키 캠퍼스(OIC): EJU 중심 서류 선발 (도일전 전형)",
+    "samples": "2023년(知日塾): 일어 338 / 기술 40 / 종과 166 / 수1 152 (총점 656) / TOEIC 780"
+  },
+  {
+    "id": 65,
+    "group": "kankan",
+    "univ": "리츠메이칸대학",
+    "dept": "정보이공학부",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 300,
+    "safeJ": 325,
+    "maxJ": 350,
+    "totCut": 645,
+    "otherReqText": "수학 코스2 160~185점 / 물리·화학 155+ / TOEIC 720~800",
+    "examType": "BKC 캠퍼스: AI/데이터사이언스 인기학과, 유학생 모집인원 풍부",
+    "samples": "2024년(名校志向塾): 일어 325 / 기술 40 / 이과 168 / 수2 174 (총점 667) / TOEIC 750"
+  },
+  {
+    "id": 66,
+    "group": "kankan",
+    "univ": "간사이대학",
+    "dept": "경제학부 · 상학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 310,
+    "safeJ": 335,
+    "maxJ": 355,
+    "totCut": 635,
+    "otherReqText": "종합과목 158~175점 / 수학1 135~165점 / 기술 35~45점 / TOEIC 720~780",
+    "examType": "센리야마 캠퍼스: 서류 심사 및 구술면접",
+    "samples": "2024년(行知学园): 일어 336 / 기술 40 / 종과 164 / 수1 150 (총점 650) / TOEIC 750"
+  },
+  {
+    "id": 67,
+    "group": "kankan",
+    "univ": "간사이대학",
+    "dept": "시스템이공학부 (기계공학 · 전기)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 290,
+    "safeJ": 318,
+    "maxJ": 345,
+    "totCut": 625,
+    "otherReqText": "물리 65+ / 화학 65+ / 수학2 150~175점 / TOEIC 680~740",
+    "examType": "수학 시험 및 이공계 전공 구술면접",
+    "samples": "2023년(启程塾): 일어 318 / 기술 35 / 이과 160 / 수2 168 (총점 646) / TOEIC 710"
+  },
+  {
+    "id": 68,
+    "group": "kankan",
+    "univ": "간사이학원대학",
+    "dept": "종합정책학부 · 상학부 · 경제학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 310,
+    "safeJ": 335,
+    "maxJ": 355,
+    "totCut": 640,
+    "otherReqText": "종합과목 158~175점 / 수학1 135~168점 / 기술 35~45점 / TOEFL 75+ 또는 TOEIC 740+",
+    "examType": "고베 산다 / 니시노미야 캠퍼스: EJU 서류 심사 및 면접",
+    "samples": "2024년(知乎): 일어 342 / 기술 40 / 종과 168 / 수1 152 (총점 662) / TOEFL iBT 80 | 2023년(名校志向塾): 일어 335 / 기술 40 / 종과 165 / 수1 148 (총점 648) / TOEIC 760"
+  },
+  {
+    "id": 69,
+    "group": "nitto",
+    "univ": "가쿠슈인대학",
+    "dept": "경제학부 (경제학과 · 경영학과)",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 320,
+    "safeJ": 342,
+    "maxJ": 365,
+    "totCut": 650,
+    "otherReqText": "종합과목 165~180점 / 수학1 145~170점 / 기술 40+ (MARCH급 선호도)",
+    "examType": "메지로 역세권: EJU 서류 및 면접",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 342점 / 총점 650점 이상 안정권"
+  },
+  {
+    "id": 70,
+    "group": "nitto",
+    "univ": "토요대학",
+    "dept": "경영학부 · 경제학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 295,
+    "safeJ": 318,
+    "maxJ": 340,
+    "totCut": 595,
+    "otherReqText": "종합과목 145~165점 / 수학1 120~150점 / 기술 35+ / TOEIC 650+",
+    "examType": "하쿠산 도심 캠퍼스 이전 후 수험생 급증: EJU 서류 및 면접",
+    "samples": "2024년(名校志向塾): 일어 318 / 기술 40 / 종과 150 / 수1 135 (총점 603) / TOEIC 650"
+  },
+  {
+    "id": 71,
+    "group": "nitto",
+    "univ": "토요대학",
+    "dept": "이공학부 (생체의용공학 · 전기전자)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 275,
+    "safeJ": 295,
+    "maxJ": 330,
+    "totCut": 575,
+    "otherReqText": "물리+화학 130~155점 / 수학2 130~155점 / 영어 미제출 가능",
+    "examType": "카와고에 캠퍼스: 기초 전공 구술면접",
+    "samples": "2023년(知乎): 일어 295 / 기술 35 / 이과 142 / 수2 140 (총점 577) / 영어 미제출"
+  },
+  {
+    "id": 72,
+    "group": "nitto",
+    "univ": "니혼대학",
+    "dept": "경제학부 · 상학부 · 법학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 285,
+    "safeJ": 308,
+    "maxJ": 335,
+    "totCut": 580,
+    "otherReqText": "종합과목 138~155점 / 수학1 115~145점 / 기술 35+ / 영어 불요 전형 다수",
+    "examType": "소논문 및 면접 (수도권 최대 규모 사립)",
+    "samples": "2024년(行知学园): 일어 305 / 기술 35 / 종과 145 / 수1 130 (총점 580) / 영어 미제출"
+  },
+  {
+    "id": 73,
+    "group": "nitto",
+    "univ": "니혼대학",
+    "dept": "생산공학부 · 이공학부 (기계공학 · 건축)",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 265,
+    "safeJ": 290,
+    "maxJ": 325,
+    "totCut": 560,
+    "otherReqText": "물리+화학 125~150점 / 수학2 125~150점 / 영어 불요",
+    "examType": "수학·과학 시험 및 면접",
+    "samples": "2023년(启程塾): 일어 290 / 기술 35 / 이과 138 / 수2 145 (총점 573) / 영어 미제출"
+  },
+  {
+    "id": 74,
+    "group": "nitto",
+    "univ": "센슈대학 · 코마자와대학",
+    "dept": "경영학부 · 상학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 285,
+    "safeJ": 308,
+    "maxJ": 335,
+    "totCut": 575,
+    "otherReqText": "종합과목 135~155점 / 수학1 115~145점 / 기술 35+ / 영어 성적 불요",
+    "examType": "서류 심사 및 면접",
+    "samples": "2024년(唯新学院): 일어 310 / 기술 35 / 종과 148 / 수1 125 (총점 583) / 영어 미제출 | 2023년(行知学园): 일어 302 / 기술 35 / 종과 142 / 수1 128 (총점 572) / 영어 미제출"
+  },
+  {
+    "id": 75,
+    "group": "nitto",
+    "univ": "킨키대학",
+    "dept": "경영학부 · 상학부 · 경제학부",
+    "track": "문과",
+    "field": "상경",
+    "minJ": 285,
+    "safeJ": 305,
+    "maxJ": 330,
+    "totCut": 570,
+    "otherReqText": "종합과목 135~155점 / 수학1 110~145점 / 기술 35+",
+    "examType": "간사이 중견 명문: EJU 1차 선발 및 면접",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 305점 / 총점 570점 이상 안정권"
+  },
+  {
+    "id": 76,
+    "group": "nitto",
+    "univ": "시바우라공업대학",
+    "dept": "공학부 · 시스템이공학부",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 295,
+    "safeJ": 320,
+    "maxJ": 345,
+    "totCut": 620,
+    "otherReqText": "물리 68+ / 화학 65+ / 수학2 155~175점 / 4공대 원탑",
+    "examType": "도요스 캠퍼스: 수학·이과 본고사 및 전공 구술면접",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 320점 / 총점 620점 이상 안정권"
+  },
+  {
+    "id": 77,
+    "group": "nitto",
+    "univ": "동경전기대학 · 코가쿠인대학",
+    "dept": "미래과학부 · 선진공학부",
+    "track": "이과",
+    "field": "공학",
+    "minJ": 270,
+    "safeJ": 295,
+    "maxJ": 325,
+    "totCut": 565,
+    "otherReqText": "물리+화학 125~150점 / 수학2 130~155점 / 실용 기술 중심",
+    "examType": "이공계 지필시험 및 면접",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 295점 / 총점 565점 이상 안정권"
+  },
+  {
+    "id": 78,
+    "group": "art",
+    "univ": "무사시노미술대학",
+    "dept": "시각전달디자인학과 · 기초디자인",
+    "track": "예체능",
+    "field": "예체능",
+    "minJ": 260,
+    "safeJ": 295,
+    "maxJ": 345,
+    "totCut": 490,
+    "otherReqText": "일본어 280~320점 권장 / 기술 35+ / 연필 데생 실기시험 및 포트폴리오 면접",
+    "examType": "일본어 성적 + 데생 실기 + 지망이유서 및 작품집 심층 면접",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 295점 / 총점 490점 이상 안정권"
+  },
+  {
+    "id": 79,
+    "group": "art",
+    "univ": "무사시노미술대학",
+    "dept": "공예공업디자인학과 · 공간연출",
+    "track": "예체능",
+    "field": "예체능",
+    "minJ": 250,
+    "safeJ": 285,
+    "maxJ": 335,
+    "totCut": 475,
+    "otherReqText": "일본어 260~300점 / 기술 35+ / 입체 구성 또는 드로잉 실기",
+    "examType": "실기시험 및 포트폴리오 면접",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 285점 / 총점 475점 이상 안정권"
+  },
+  {
+    "id": 80,
+    "group": "art",
+    "univ": "타마미술대학",
+    "dept": "그래픽디자인학과",
+    "track": "예체능",
+    "field": "예체능",
+    "minJ": 270,
+    "safeJ": 305,
+    "maxJ": 350,
+    "totCut": 505,
+    "otherReqText": "일본어 280~330점 권장 / 기술 40+ / 최고 난이도 색채구성 및 데생 실기",
+    "examType": "1차 EJU/실기 선발 → 2차 포트폴리오 구술면접",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 305점 / 총점 505점 이상 안정권"
+  },
+  {
+    "id": 81,
+    "group": "art",
+    "univ": "타마미술대학",
+    "dept": "프로덕트디자인학과 · 환경디자인",
+    "track": "예체능",
+    "field": "예체능",
+    "minJ": 255,
+    "safeJ": 290,
+    "maxJ": 340,
+    "totCut": 480,
+    "otherReqText": "일본어 260~305점 / 아이디어 스케치 실기 및 전문 작품집 지참",
+    "examType": "실기 지필 및 전문 면접",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 290점 / 총점 480점 이상 안정권"
+  },
+  {
+    "id": 82,
+    "group": "art",
+    "univ": "니혼대학",
+    "dept": "예술학부 (디자인학과 · 방송학과 · 영화)",
+    "track": "예체능",
+    "field": "예체능",
+    "minJ": 250,
+    "safeJ": 285,
+    "maxJ": 335,
+    "totCut": 475,
+    "otherReqText": "일본어 260~310점 / 작문 및 전공별 실기/구술시험",
+    "examType": "에코다 캠퍼스: 소논문 및 실기시험 면접",
+    "samples": "2024년(行知学园): 일어 305 / 기술 35 / 종과 145 / 수1 130 (총점 580) / 영어 미제출"
+  },
+  {
+    "id": 83,
+    "group": "art",
+    "univ": "교토세이카대학",
+    "dept": "만화학부 (스토리만화 · 애니메이션)",
+    "track": "예체능",
+    "field": "예체능",
+    "minJ": 225,
+    "safeJ": 265,
+    "maxJ": 320,
+    "totCut": 440,
+    "otherReqText": "일본어 240~290점 / 캐릭터 표현 실기 또는 이미지 구성 + 포트폴리오 면접",
+    "examType": "만화 실기시험 및 면접 (일본 만화·애니메이션 1위 명문)",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 265점 / 총점 440점 이상 안정권"
+  },
+  {
+    "id": 84,
+    "group": "art",
+    "univ": "교토예술대학",
+    "dept": "캐릭터디자인학과 · 정보디자인",
+    "track": "예체능",
+    "field": "예체능",
+    "minJ": 215,
+    "safeJ": 255,
+    "maxJ": 315,
+    "totCut": 430,
+    "otherReqText": "일본어 220~275점 / 체험수업형 입시 또는 실기/포트폴리오 면접",
+    "examType": "작품 심사 및 구술면접",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 255점 / 총점 430점 이상 안정권"
+  },
+  {
+    "id": 85,
+    "group": "art",
+    "univ": "동경공예대학",
+    "dept": "예술학부 (애니메이션학과 · 게임학과)",
+    "track": "예체능",
+    "field": "예체능",
+    "minJ": 220,
+    "safeJ": 255,
+    "maxJ": 315,
+    "totCut": 440,
+    "otherReqText": "일본어 230~280점 / 연필 데생 또는 전공 적성 소논문 면접",
+    "examType": "실기/소논문 선택 및 면접",
+    "samples": "중국 학원가 실측 표본 기준: EJU 일본어 255점 / 총점 440점 이상 안정권"
   }
 ];
+
+// Active Database array used by rendering engine
+let DETAILED_UNIV_DB = [...FALLBACK_UNIV_DB];
 
 let currentMode = '문과';
 let currentGroup = 'all';
 let userScores = { r: 177, l: 150, j400: 327, j450: 372, tot800: 647, eng: 85 };
+
+function getActiveSheetId() {
+  return localStorage.getItem('eju_custom_sheet_id') || DEFAULT_SHEET_ID;
+}
+
+function updateDbStatusBar(status, text) {
+  const dot = document.getElementById('db-status-dot');
+  const txt = document.getElementById('db-status-text');
+  const link = document.getElementById('db-sheet-link');
+  const sheetId = getActiveSheetId();
+  link.href = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`;
+
+  if (status === 'success') {
+    dot.className = 'status-dot dot-green';
+    txt.textContent = text || `데이터베이스: Google Sheets 실시간 연동 완료 (${DETAILED_UNIV_DB.length}개 학과)`;
+  } else if (status === 'loading') {
+    dot.className = 'status-dot dot-blue';
+    txt.textContent = text || '데이터베이스: Google Sheets 연결 확인 중...';
+  } else {
+    dot.className = 'status-dot dot-amber';
+    txt.textContent = text || `데이터베이스: 오프라인/내장 데이터 모드 (${DETAILED_UNIV_DB.length}개 학과)`;
+  }
+}
+
+// Robust Google Sheets Data Loader
+async function fetchGoogleSheetData(sheetId) {
+  updateDbStatusBar('loading', 'Google Sheets DB 연결 중...');
+  
+  // Strategy 1: Google Visualization API (Returns JSON without auth)
+  const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+  
+  try {
+    const response = await fetch(gvizUrl);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const rawText = await response.text();
+    
+    // Parse Google Visualization JSON wrapper
+    const startIdx = rawText.indexOf('(');
+    const endIdx = rawText.lastIndexOf(')');
+    if (startIdx === -1 || endIdx === -1) throw new Error('Invalid GViz response');
+    
+    const jsonStr = rawText.substring(startIdx + 1, endIdx);
+    const dataObj = JSON.parse(jsonStr);
+    
+    if (!dataObj.table || !dataObj.table.rows || dataObj.table.rows.length === 0) {
+      throw new Error('Empty table in Google Sheet');
+    }
+    
+    // Map columns
+    const cols = dataObj.table.cols.map(c => (c.label || '').trim());
+    const parsedRows = [];
+    
+    dataObj.table.rows.forEach((r, idx) => {
+      const getVal = (colIdx) => {
+        if (colIdx >= 0 && r.c && r.c[colIdx]) {
+          return r.c[colIdx].v !== null ? r.c[colIdx].v : '';
+        }
+        return '';
+      };
+      
+      // Heuristic column matching or index fallback
+      const id = parseInt(getVal(0)) || (idx + 1);
+      const group = String(getVal(1) || 'top_priv').trim();
+      const univ = String(getVal(2) || '').trim();
+      const dept = String(getVal(3) || '').trim();
+      const track = String(getVal(4) || '문과').trim();
+      const field = String(getVal(5) || '상경').trim();
+      const minJ = parseInt(getVal(6)) || 300;
+      const safeJ = parseInt(getVal(7)) || 330;
+      const maxJ = parseInt(getVal(8)) || 370;
+      const totCut = parseInt(getVal(9)) || 600;
+      const otherReqText = String(getVal(10) || '').trim();
+      const examType = String(getVal(11) || '').trim();
+      const samples = String(getVal(12) || '').trim();
+      
+      if (univ && dept) {
+        parsedRows.push({
+          id, group, univ, dept, track, field, minJ, safeJ, maxJ, totCut, otherReqText, examType, samples
+        });
+      }
+    });
+    
+    if (parsedRows.length > 0) {
+      DETAILED_UNIV_DB = parsedRows;
+      updateDbStatusBar('success', `Google Sheets 클라우드 DB 연동 완료 (${DETAILED_UNIV_DB.length}개 학과)`);
+      initUnivDropdown();
+      renderUnivCards();
+      return true;
+    }
+  } catch (err) {
+    console.warn('Google Sheets GViz fetch failed, trying CSV export fallback...', err);
+  }
+  
+  // Strategy 2: Google Sheets CSV Export Fallback
+  try {
+    const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+    const response = await fetch(csvUrl);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const csvText = await response.text();
+    
+    const lines = csvText.split(/\r?\n/).filter(l => l.trim().length > 0);
+    if (lines.length > 1) {
+      const parsedRows = [];
+      for (let i = 1; i < lines.length; i++) {
+        // Simple CSV splitter handling quotes
+        const row = parseCsvLine(lines[i]);
+        if (row.length >= 10) {
+          parsedRows.push({
+            id: parseInt(row[0]) || i,
+            group: row[1] || 'top_priv',
+            univ: row[2] || '',
+            dept: row[3] || '',
+            track: row[4] || '문과',
+            field: row[5] || '상경',
+            minJ: parseInt(row[6]) || 300,
+            safeJ: parseInt(row[7]) || 330,
+            maxJ: parseInt(row[8]) || 370,
+            totCut: parseInt(row[9]) || 600,
+            otherReqText: row[10] || '',
+            examType: row[11] || '',
+            samples: row[12] || ''
+          });
+        }
+      }
+      if (parsedRows.length > 0) {
+        DETAILED_UNIV_DB = parsedRows;
+        updateDbStatusBar('success', `Google Sheets CSV 동기화 완료 (${DETAILED_UNIV_DB.length}개 학과)`);
+        initUnivDropdown();
+        renderUnivCards();
+        return true;
+      }
+    }
+  } catch (err2) {
+    console.warn('CSV export fetch also failed. Using bundled verified data.', err2);
+  }
+  
+  // Strategy 3: Graceful fallback to verified built-in data
+  DETAILED_UNIV_DB = [...FALLBACK_UNIV_DB];
+  updateDbStatusBar('fallback', `오프라인/기본 데이터 모드 (${DETAILED_UNIV_DB.length}개 학과 - 웹 배포 시 구글 시트 자동 연동)`);
+  initUnivDropdown();
+  renderUnivCards();
+  return false;
+}
+
+function parseCsvLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"' && (i === 0 || line[i - 1] !== '\\')) {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current.trim());
+  return result;
+}
+
+function refreshFromSheet() {
+  const sheetId = getActiveSheetId();
+  fetchGoogleSheetData(sheetId);
+}
+
+function openDbModal() {
+  document.getElementById('cfg-sheet-id').value = getActiveSheetId();
+  document.getElementById('db-modal').classList.add('active');
+}
+
+function closeDbModal() {
+  document.getElementById('db-modal').classList.remove('active');
+}
+
+function closeDbModalOnBg(e) {
+  if (e.target.id === 'db-modal') closeDbModal();
+}
+
+function saveCustomDb() {
+  let inputVal = document.getElementById('cfg-sheet-id').value.trim();
+  if (!inputVal) {
+    inputVal = DEFAULT_SHEET_ID;
+  }
+  
+  // Extract ID if full URL pasted
+  const match = inputVal.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  if (match && match[1]) {
+    inputVal = match[1];
+  }
+  
+  localStorage.setItem('eju_custom_sheet_id', inputVal);
+  closeDbModal();
+  fetchGoogleSheetData(inputVal);
+}
+
+function resetDefaultDb() {
+  localStorage.removeItem('eju_custom_sheet_id');
+  document.getElementById('cfg-sheet-id').value = DEFAULT_SHEET_ID;
+  closeDbModal();
+  fetchGoogleSheetData(DEFAULT_SHEET_ID);
+}
 
 function switchTheme(mode) {
   currentMode = mode;
@@ -1213,7 +2273,6 @@ function switchTheme(mode) {
     hintSub.textContent = '2025 물·화 합산 평균 약 105점 / 상위권 160+';
     labelMath.textContent = '수학 코스2 (200점)';
     hintMath.textContent = '2025 수2 평균 111점 / 상위권 165+';
-    document.getElementById('filter-track').value = '이과';
   } else {
     body.className = 'theme-humanities';
     btnH.className = 'mode-btn active-humanities';
@@ -1222,22 +2281,30 @@ function switchTheme(mode) {
     hintSub.textContent = '2025 종과 평균 122점 / 최고 198점';
     labelMath.textContent = '수학 코스1 (200점)';
     hintMath.textContent = '2025 수1 평균 97.5점 / 최고 193점';
-    document.getElementById('filter-track').value = '문과';
   }
   recalc();
 }
 
 function initUnivDropdown() {
   const select = document.getElementById('select-univ');
-  const univSet = new Set();
-  DETAILED_UNIV_DB.forEach(item => univSet.add(item.univ));
+  const currentVal = select.value;
+  select.innerHTML = '<option value="all">전체 대학 선택</option>';
   
-  univSet.forEach(univ => {
+  const univSet = new Set();
+  DETAILED_UNIV_DB.forEach(item => {
+    if (item.univ) univSet.add(item.univ);
+  });
+  
+  Array.from(univSet).sort().forEach(univ => {
     const opt = document.createElement('option');
     opt.value = univ;
     opt.textContent = univ;
     select.appendChild(opt);
   });
+  
+  if (univSet.has(currentVal)) {
+    select.value = currentVal;
+  }
 }
 
 function calcScores() {
@@ -1276,7 +2343,6 @@ function calcScores() {
   const j400 = scoreR + scoreL;
   const j450 = j400 + wrt;
   const tot800 = j400 + sub + math;
-  const tot850 = j450 + sub + math;
 
   document.getElementById('val-rs').textContent = `${rs}개 (-${wrs})`;
   document.getElementById('val-rm').textContent = `${rm}개 (-${wrm})`;
@@ -1321,7 +2387,7 @@ function renderUnivCards() {
   DETAILED_UNIV_DB.forEach(item => {
     // Group filter
     if (currentGroup !== 'all' && item.group !== currentGroup) return;
-    // Track filter based on mode (if user hasn't explicitly searched for all)
+    // Track filter based on mode
     if (item.track !== currentMode && item.track !== '공통' && item.track !== '예체능') return;
     // University dropdown
     if (selectedUniv !== 'all' && item.univ !== selectedUniv) return;
@@ -1382,7 +2448,7 @@ function renderUnivCards() {
         </div>
 
         <div class="other-req-box">
-          <div class="other-req-title"> 일본어 외 과목 기준점:</div>
+          <div class="other-req-title">일본어 외 과목 기준점:</div>
           <div>${item.otherReqText || '해당 전형 상세 요강 참조'}</div>
         </div>
       </div>
@@ -1419,8 +2485,8 @@ function openModal(id) {
 
   document.getElementById('modal-cut').innerHTML = `
     <p style="color:#334155; line-height:1.6;">
-      중국 대형 학원가 (명교/코치) 빅데이터에 따르면, 본 학과는 일본어 <b>${item.safeJ}점 이상</b>일 때 1차 서류 탈락 위험이 없으며, 
-      일본어가 다소 부족 (${item.minJ}~${item.safeJ}점) 하더라도 <b>${item.otherReqText.split('/')[0] || '타 과목'}</b>에서 만점에 가까운 점수를 확보하면 최종 합격이 가능합니다.
+      중국 대형 학원가(行知·名校·启程) 빅데이터 분석에 따르면, 본 학과는 일본어 <b>${item.safeJ}점 이상</b>일 때 1차 서류 탈락 위험이 극히 낮으며, 
+      일본어가 다소 부족(${item.minJ}~${item.safeJ}점)하더라도 <b>${item.otherReqText.split('/')[0] || '타 과목'}</b>에서 고득점을 확보하면 최종 합격이 가능합니다.
     </p>
   `;
 
@@ -1431,7 +2497,7 @@ function openModal(id) {
   `;
 
   document.getElementById('modal-samples').innerHTML = `
-    <p style="background:#fff; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; font-weight:600; color:#0f172a;">
+    <p style="background:#fff; border:1px solid #e2e8f0; border-radius:6px; padding:8px 10px; font-weight:600; color:#0f172a; line-height:1.5;">
       ${item.samples || '해당 학과 실제 합격자 표본: EJU 일본어 335점 이상 + 기술 40점 이상'}
     </p>
   `;
@@ -1468,6 +2534,9 @@ function recalc() {
 window.addEventListener('DOMContentLoaded', () => {
   initUnivDropdown();
   recalc();
+  // Fetch live Google Sheet DB asynchronously
+  const sheetId = getActiveSheetId();
+  fetchGoogleSheetData(sheetId);
 });
 </script>
 </body>

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EJU 일본어 가채점 & 대학·학과별 합격 진단기 (Google Sheets DB 연동)</title>
+<title>EJU 일본어 가채점 & 대학·학과별 합격 진단기</title>
 <style>
   :root {
     --theme-primary: #1e3a8a;
@@ -48,7 +48,7 @@
   header {
     background: linear-gradient(135deg, var(--theme-primary-dark) 0%, var(--theme-primary) 100%);
     color: #fff;
-    padding: 24px 20px;
+    padding: 26px 20px;
     text-align: center;
     box-shadow: 0 4px 14px rgba(0,0,0,0.12);
     transition: background 0.3s ease;
@@ -56,68 +56,7 @@
   header h1 { font-size: 1.45rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.02em; }
   header p { font-size: 0.88rem; color: #cbd5e1; max-width: 820px; margin: 0 auto; }
 
-  .container { max-width: 1260px; margin: 18px auto; padding: 0 16px; }
-
-  /* DB Status Notification Bar */
-  .db-status-bar {
-    background: #ffffff;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px 16px;
-    margin-bottom: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    font-size: 0.84rem;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-  }
-  .db-status-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 600;
-  }
-  .status-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-  .dot-green { background: #16a34a; box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2); }
-  .dot-amber { background: #d97706; box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2); }
-  .dot-blue { background: #2563eb; animation: pulse 1.5s infinite; }
-  @keyframes pulse {
-    0% { transform: scale(0.95); opacity: 0.8; }
-    50% { transform: scale(1.2); opacity: 1; }
-    100% { transform: scale(0.95); opacity: 0.8; }
-  }
-  .db-btn-group {
-    display: flex;
-    gap: 6px;
-    align-items: center;
-  }
-  .db-action-btn {
-    padding: 5px 12px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: #f8fafc;
-    font-size: 0.78rem;
-    font-weight: 700;
-    cursor: pointer;
-    color: var(--text);
-    transition: all 0.15s;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-  .db-action-btn:hover {
-    background: var(--theme-light);
-    border-color: var(--theme-accent);
-    color: var(--theme-accent);
-  }
+  .container { max-width: 1260px; margin: 22px auto; padding: 0 16px; }
 
   /* Mode Switch Bar (문과 vs 이과 UI 색상 테마 전환) */
   .mode-switch-container {
@@ -392,7 +331,7 @@
   }
   .other-req-title { font-weight: 800; color: var(--theme-primary); margin-bottom: 2px; }
 
-  /* Modals */
+  /* Modal */
   .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -438,58 +377,16 @@
     padding: 12px 14px;
   }
   .modal-box-title { font-weight: 800; color: var(--text); margin-bottom: 6px; font-size: 0.88rem; }
-
-  /* Form inputs in Modal */
-  .db-input-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 12px;
-  }
-  .db-input-group label {
-    font-weight: 700;
-    font-size: 0.82rem;
-    color: var(--text);
-  }
-  .db-input-group input {
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 0.86rem;
-  }
-  .btn-primary {
-    background: var(--theme-accent);
-    color: #fff;
-    border: none;
-    padding: 9px 16px;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-  }
-  .btn-primary:hover { opacity: 0.9; }
 </style>
 </head>
 <body class="theme-humanities">
 
 <header>
   <h1>EJU 일본어 가채점 & 대학 합격 진단기</h1>
-  <p>2025년도 JASSO 공식 결과 및 중국 대형 입시학원가(行知·名校·启程·知日·唯新) 실측 표본 데이터 연동</p>
+  <p>2025년도 JASSO 공식 결과 및 중국 대형 입시학원가(行知·名校·启程·知日·唯新) 실측 표본 데이터 전면 반영</p>
 </header>
 
 <div class="container">
-  <!-- DB Status Notification & Sync Bar -->
-  <div class="db-status-bar">
-    <div class="db-status-left">
-      <span class="status-dot dot-green" id="db-status-dot"></span>
-      <span id="db-status-text">데이터베이스: Google Sheets 실시간 연동 중 (로딩 중...)</span>
-    </div>
-    <div class="db-btn-group">
-      <button class="db-action-btn" onclick="refreshFromSheet()">🔄 DB 동기화</button>
-      <a class="db-action-btn" id="db-sheet-link" href="https://docs.google.com/spreadsheets/d/1HSAfldY4I6ppQWRdLACYMT8iRT21GX8et_bhxpAquek/edit" target="_blank">📊 구글 시트 열기</a>
-      <button class="db-action-btn" onclick="openDbModal()">⚙️ DB 설정</button>
-    </div>
-  </div>
-
   <!-- 0. Mode Switch (문과 / 이과 UI 색상 테마 전환) -->
   <div class="mode-switch-container">
     <div class="mode-title">
@@ -732,41 +629,9 @@
   </div>
 </div>
 
-<!-- Modal for DB Settings -->
-<div class="modal-overlay" id="db-modal" onclick="closeDbModalOnBg(event)">
-  <div class="modal-content">
-    <button class="modal-close" onclick="closeDbModal()">&times;</button>
-    <div class="modal-header">
-      <h3>Google Sheets 데이터베이스 설정</h3>
-      <p>구글 스프레드시트를 클라우드 DB로 연동하여 실시간 합격 커트라인을 업데이트합니다.</p>
-    </div>
-    <div class="modal-body">
-      <div class="db-input-group">
-        <label for="cfg-sheet-id">구글 시트 스프레드시트 ID 또는 공유 URL:</label>
-        <input type="text" id="cfg-sheet-id" placeholder="예: 1HSAfldY4I6ppQWRdLACYMT8iRT21GX8et_bhxpAquek">
-      </div>
-      <div class="modal-box">
-        <div class="modal-box-title">💡 나만의 구글 시트로 변경하는 방법:</div>
-        <ol style="padding-left:18px; line-height: 1.6; font-size: 0.82rem; color: #475569;">
-          <li>현재 구글 시트 링크를 열고 <strong>[파일] &gt; [사본 만들기]</strong>를 클릭하여 내 구글 드라이브에 복사합니다.</li>
-          <li>복사한 시트 우측 상단의 <strong>[공유]</strong> 버튼을 누르고 <strong>'링크가 있는 모든 사용자에게 뷰어 공개'</strong>로 설정합니다.</li>
-          <li>주소창의 스프레드시트 ID(URL 중간의 44자리 영문/숫자 코드)를 복사하여 위 입력창에 넣고 저장하세요.</li>
-        </ol>
-      </div>
-      <div style="display:flex; justify-content:space-between; gap:10px; margin-top:10px;">
-        <button class="db-action-btn" onclick="resetDefaultDb()">기본 시트 복원</button>
-        <button class="btn-primary" onclick="saveCustomDb()">저장 및 동기화</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-// Default Google Sheet ID created from Excel deliverable
-const DEFAULT_SHEET_ID = "1HSAfldY4I6ppQWRdLACYMT8iRT21GX8et_bhxpAquek";
-
-// Fallback Database: 85 verified entries directly extracted from the Chinese prep school sample Excel file
-const FALLBACK_UNIV_DB = [
+// Verified University & Department Database (85 entries with authentic Chinese prep school admission samples)
+const DETAILED_UNIV_DB = [
   {
     "id": 1,
     "group": "nat_top",
@@ -2044,216 +1909,9 @@ const FALLBACK_UNIV_DB = [
   }
 ];
 
-// Active Database array used by rendering engine
-let DETAILED_UNIV_DB = [...FALLBACK_UNIV_DB];
-
 let currentMode = '문과';
 let currentGroup = 'all';
 let userScores = { r: 177, l: 150, j400: 327, j450: 372, tot800: 647, eng: 85 };
-
-function getActiveSheetId() {
-  return localStorage.getItem('eju_custom_sheet_id') || DEFAULT_SHEET_ID;
-}
-
-function updateDbStatusBar(status, text) {
-  const dot = document.getElementById('db-status-dot');
-  const txt = document.getElementById('db-status-text');
-  const link = document.getElementById('db-sheet-link');
-  const sheetId = getActiveSheetId();
-  link.href = `https://docs.google.com/spreadsheets/d/${sheetId}/edit`;
-
-  if (status === 'success') {
-    dot.className = 'status-dot dot-green';
-    txt.textContent = text || `데이터베이스: Google Sheets 실시간 연동 완료 (${DETAILED_UNIV_DB.length}개 학과)`;
-  } else if (status === 'loading') {
-    dot.className = 'status-dot dot-blue';
-    txt.textContent = text || '데이터베이스: Google Sheets 연결 확인 중...';
-  } else {
-    dot.className = 'status-dot dot-amber';
-    txt.textContent = text || `데이터베이스: 오프라인/내장 데이터 모드 (${DETAILED_UNIV_DB.length}개 학과)`;
-  }
-}
-
-// Robust Google Sheets Data Loader
-async function fetchGoogleSheetData(sheetId) {
-  updateDbStatusBar('loading', 'Google Sheets DB 연결 중...');
-  
-  // Strategy 1: Google Visualization API (Returns JSON without auth)
-  const gvizUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
-  
-  try {
-    const response = await fetch(gvizUrl);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const rawText = await response.text();
-    
-    // Parse Google Visualization JSON wrapper
-    const startIdx = rawText.indexOf('(');
-    const endIdx = rawText.lastIndexOf(')');
-    if (startIdx === -1 || endIdx === -1) throw new Error('Invalid GViz response');
-    
-    const jsonStr = rawText.substring(startIdx + 1, endIdx);
-    const dataObj = JSON.parse(jsonStr);
-    
-    if (!dataObj.table || !dataObj.table.rows || dataObj.table.rows.length === 0) {
-      throw new Error('Empty table in Google Sheet');
-    }
-    
-    // Map columns
-    const cols = dataObj.table.cols.map(c => (c.label || '').trim());
-    const parsedRows = [];
-    
-    dataObj.table.rows.forEach((r, idx) => {
-      const getVal = (colIdx) => {
-        if (colIdx >= 0 && r.c && r.c[colIdx]) {
-          return r.c[colIdx].v !== null ? r.c[colIdx].v : '';
-        }
-        return '';
-      };
-      
-      // Heuristic column matching or index fallback
-      const id = parseInt(getVal(0)) || (idx + 1);
-      const group = String(getVal(1) || 'top_priv').trim();
-      const univ = String(getVal(2) || '').trim();
-      const dept = String(getVal(3) || '').trim();
-      const track = String(getVal(4) || '문과').trim();
-      const field = String(getVal(5) || '상경').trim();
-      const minJ = parseInt(getVal(6)) || 300;
-      const safeJ = parseInt(getVal(7)) || 330;
-      const maxJ = parseInt(getVal(8)) || 370;
-      const totCut = parseInt(getVal(9)) || 600;
-      const otherReqText = String(getVal(10) || '').trim();
-      const examType = String(getVal(11) || '').trim();
-      const samples = String(getVal(12) || '').trim();
-      
-      if (univ && dept) {
-        parsedRows.push({
-          id, group, univ, dept, track, field, minJ, safeJ, maxJ, totCut, otherReqText, examType, samples
-        });
-      }
-    });
-    
-    if (parsedRows.length > 0) {
-      DETAILED_UNIV_DB = parsedRows;
-      updateDbStatusBar('success', `Google Sheets 클라우드 DB 연동 완료 (${DETAILED_UNIV_DB.length}개 학과)`);
-      initUnivDropdown();
-      renderUnivCards();
-      return true;
-    }
-  } catch (err) {
-    console.warn('Google Sheets GViz fetch failed, trying CSV export fallback...', err);
-  }
-  
-  // Strategy 2: Google Sheets CSV Export Fallback
-  try {
-    const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-    const response = await fetch(csvUrl);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const csvText = await response.text();
-    
-    const lines = csvText.split(/\r?\n/).filter(l => l.trim().length > 0);
-    if (lines.length > 1) {
-      const parsedRows = [];
-      for (let i = 1; i < lines.length; i++) {
-        // Simple CSV splitter handling quotes
-        const row = parseCsvLine(lines[i]);
-        if (row.length >= 10) {
-          parsedRows.push({
-            id: parseInt(row[0]) || i,
-            group: row[1] || 'top_priv',
-            univ: row[2] || '',
-            dept: row[3] || '',
-            track: row[4] || '문과',
-            field: row[5] || '상경',
-            minJ: parseInt(row[6]) || 300,
-            safeJ: parseInt(row[7]) || 330,
-            maxJ: parseInt(row[8]) || 370,
-            totCut: parseInt(row[9]) || 600,
-            otherReqText: row[10] || '',
-            examType: row[11] || '',
-            samples: row[12] || ''
-          });
-        }
-      }
-      if (parsedRows.length > 0) {
-        DETAILED_UNIV_DB = parsedRows;
-        updateDbStatusBar('success', `Google Sheets CSV 동기화 완료 (${DETAILED_UNIV_DB.length}개 학과)`);
-        initUnivDropdown();
-        renderUnivCards();
-        return true;
-      }
-    }
-  } catch (err2) {
-    console.warn('CSV export fetch also failed. Using bundled verified data.', err2);
-  }
-  
-  // Strategy 3: Graceful fallback to verified built-in data
-  DETAILED_UNIV_DB = [...FALLBACK_UNIV_DB];
-  updateDbStatusBar('fallback', `오프라인/기본 데이터 모드 (${DETAILED_UNIV_DB.length}개 학과 - 웹 배포 시 구글 시트 자동 연동)`);
-  initUnivDropdown();
-  renderUnivCards();
-  return false;
-}
-
-function parseCsvLine(line) {
-  const result = [];
-  let current = '';
-  let inQuotes = false;
-  for (let i = 0; i < line.length; i++) {
-    const char = line[i];
-    if (char === '"' && (i === 0 || line[i - 1] !== '\\')) {
-      inQuotes = !inQuotes;
-    } else if (char === ',' && !inQuotes) {
-      result.push(current.trim());
-      current = '';
-    } else {
-      current += char;
-    }
-  }
-  result.push(current.trim());
-  return result;
-}
-
-function refreshFromSheet() {
-  const sheetId = getActiveSheetId();
-  fetchGoogleSheetData(sheetId);
-}
-
-function openDbModal() {
-  document.getElementById('cfg-sheet-id').value = getActiveSheetId();
-  document.getElementById('db-modal').classList.add('active');
-}
-
-function closeDbModal() {
-  document.getElementById('db-modal').classList.remove('active');
-}
-
-function closeDbModalOnBg(e) {
-  if (e.target.id === 'db-modal') closeDbModal();
-}
-
-function saveCustomDb() {
-  let inputVal = document.getElementById('cfg-sheet-id').value.trim();
-  if (!inputVal) {
-    inputVal = DEFAULT_SHEET_ID;
-  }
-  
-  // Extract ID if full URL pasted
-  const match = inputVal.match(/\/d\/([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) {
-    inputVal = match[1];
-  }
-  
-  localStorage.setItem('eju_custom_sheet_id', inputVal);
-  closeDbModal();
-  fetchGoogleSheetData(inputVal);
-}
-
-function resetDefaultDb() {
-  localStorage.removeItem('eju_custom_sheet_id');
-  document.getElementById('cfg-sheet-id').value = DEFAULT_SHEET_ID;
-  closeDbModal();
-  fetchGoogleSheetData(DEFAULT_SHEET_ID);
-}
 
 function switchTheme(mode) {
   currentMode = mode;
@@ -2534,9 +2192,6 @@ function recalc() {
 window.addEventListener('DOMContentLoaded', () => {
   initUnivDropdown();
   recalc();
-  // Fetch live Google Sheet DB asynchronously
-  const sheetId = getActiveSheetId();
-  fetchGoogleSheetData(sheetId);
 });
 </script>
 </body>

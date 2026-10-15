@@ -72,8 +72,8 @@
     gap: 12px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.03);
   }
-  .mode-title { font-size: 0.95rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px; }
-  .mode-btn-group { display: flex; gap: 8px; }
+  .mode-title { font-size: 0.95rem; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .mode-btn-group { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
   .mode-btn {
     padding: 8px 18px;
     border-radius: 10px;
@@ -96,10 +96,37 @@
     border-color: #b91c1c;
   }
 
+  /* Sub-mode toggle for Humanities (일종수 vs 일종) */
+  .hum-submode-wrap {
+    display: inline-flex;
+    align-items: center;
+    background: #f1f5f9;
+    padding: 3px;
+    border-radius: 9px;
+    border: 1px solid var(--border);
+    gap: 4px;
+  }
+  .hum-submode-btn {
+    padding: 5px 11px;
+    border-radius: 7px;
+    border: none;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+  .hum-submode-btn.active {
+    background: var(--theme-accent);
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+
   /* KPI Summary Cards */
   .kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 14px;
     margin-bottom: 24px;
   }
@@ -114,10 +141,28 @@
     border: 2px solid var(--theme-accent);
     background: linear-gradient(180deg, #ffffff 0%, var(--theme-light) 100%);
   }
-  .kpi-label { font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+  .kpi-label { font-size: 0.82rem; font-weight: 700; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; gap: 6px; }
   .kpi-value { font-size: 2rem; font-weight: 800; color: var(--theme-primary); }
-  .kpi-unit { font-size: 0.95rem; font-weight: 600; color: var(--muted); margin-left: 2px; }
+  .kpi-unit { font-size: 0.92rem; font-weight: 600; color: var(--muted); margin-left: 2px; }
   .kpi-sub { font-size: 0.76rem; color: var(--muted); margin-top: 4px; }
+
+  .kpi-dual-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 2px;
+  }
+  .kpi-secondary-box {
+    background: var(--theme-light);
+    border: 1px solid var(--theme-border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--theme-primary);
+  }
 
   .badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; }
   .badge-theme { background: var(--theme-light); color: var(--theme-accent); border: 1px solid var(--theme-border); }
@@ -172,6 +217,10 @@
     border-radius: 12px;
     padding: 14px 16px;
   }
+  .slider-item.sci-special {
+    background: #fff5f5;
+    border: 1px solid #fecaca;
+  }
   .slider-top {
     display: flex;
     justify-content: space-between;
@@ -179,6 +228,7 @@
     font-size: 0.86rem;
     font-weight: 700;
     margin-bottom: 8px;
+    gap: 6px;
   }
   .slider-pill {
     font-weight: 800;
@@ -187,6 +237,39 @@
     padding: 2px 10px;
     border-radius: 999px;
     font-size: 0.8rem;
+    white-space: nowrap;
+  }
+  .sci-select {
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--theme-border);
+    background: #fff;
+    color: var(--theme-primary);
+    font-weight: 800;
+    font-size: 0.82rem;
+    cursor: pointer;
+  }
+  .sci-combo-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .sci-combo-btn {
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-size: 0.73rem;
+    font-weight: 700;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .sci-combo-btn.active {
+    background: var(--theme-primary);
+    color: #fff;
+    border-color: var(--theme-primary);
   }
   input[type="range"] {
     width: 100%;
@@ -201,10 +284,20 @@
     font-size: 0.72rem;
     color: var(--muted);
     margin-top: 5px;
+    gap: 6px;
   }
 
   /* Preset buttons */
-  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+  .presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; align-items: center; }
+  .preset-mode-tag {
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 6px 11px;
+    border-radius: 8px;
+    background: var(--theme-light);
+    color: var(--theme-primary);
+    border: 1px solid var(--theme-border);
+  }
   .preset-btn {
     font-size: 0.8rem;
     padding: 6px 14px;
@@ -266,15 +359,15 @@
   /* University Department Cards */
   .univ-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-    gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(370px, 1fr));
+    gap: 16px;
   }
   @media (max-width: 768px) {
     .univ-grid { grid-template-columns: 1fr; }
   }
   .univ-card {
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 16px;
     background: #fff;
     cursor: pointer;
@@ -294,30 +387,136 @@
     justify-content: space-between;
     align-items: flex-start;
     gap: 8px;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
   .univ-card-name { font-size: 1rem; font-weight: 800; color: var(--text); }
   .univ-card-dept { font-size: 0.86rem; font-weight: 700; color: var(--theme-primary); margin-top: 2px; }
   
-  /* Floating Range Bar */
+  /* Intuitive Score Gauge Block */
+  .diag-gauge-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .diag-gauge-box.tot-box {
+    background: #fcfdff;
+    border-color: var(--theme-border);
+  }
+  .diag-gauge-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    gap: 6px;
+  }
+  .diag-gauge-title {
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .diag-my-score-pill {
+    font-size: 0.76rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: var(--theme-primary);
+    color: #fff;
+  }
+
+  /* Floating Range Bar with Intuitive User Pin */
   .bar-track {
     position: relative;
     height: 12px;
-    background: #f1f5f9;
+    background: #e2e8f0;
     border-radius: 999px;
-    margin: 10px 0 6px;
-    overflow: hidden;
+    margin: 6px 0 6px;
+    overflow: visible;
   }
-  .bar-range { position: absolute; top: 0; bottom: 0; background: #cbd5e1; border-radius: 999px; }
-  .bar-safe { position: absolute; top: 0; bottom: 0; background: var(--theme-border); border-radius: 0 999px 999px 0; }
-  .bar-user { position: absolute; top: -2px; bottom: -2px; width: 4px; background: #dc2626; z-index: 5; transition: left 0.15s; }
+  .bar-range {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: #fcd34d;
+    border-radius: 999px;
+    opacity: 0.85;
+  }
+  .bar-safe {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    background: #4ade80;
+    border-radius: 0 999px 999px 0;
+  }
+  .bar-cut-tick {
+    position: absolute;
+    top: -3px;
+    bottom: -3px;
+    width: 2px;
+    background: #15803d;
+    z-index: 4;
+  }
+  .bar-user {
+    position: absolute;
+    top: -4px;
+    bottom: -4px;
+    width: 4px;
+    background: var(--theme-accent);
+    border-radius: 4px;
+    z-index: 6;
+    transition: left 0.15s;
+    box-shadow: 0 0 0 2px #fff, 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .bar-user-pin {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--theme-primary-dark);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 1px 6px;
+    border-radius: 5px;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    pointer-events: none;
+  }
+  .bar-user-pin::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 4px 4px 0;
+    border-style: solid;
+    border-color: var(--theme-primary-dark) transparent transparent;
+  }
   
   .score-indicators {
     display: flex;
     justify-content: space-between;
-    font-size: 0.74rem;
+    font-size: 0.73rem;
     color: var(--muted);
-    margin-bottom: 8px;
+    margin-top: 4px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .iljong-sub-row {
+    margin-top: 7px;
+    padding-top: 6px;
+    border-top: 1px dashed #cbd5e1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: #1e293b;
+    flex-wrap: wrap;
+    gap: 4px;
   }
   .other-req-box {
     background: #f8fafc;
@@ -326,10 +525,10 @@
     font-size: 0.76rem;
     border-left: 3px solid var(--theme-accent);
     color: #334155;
-    margin-top: 6px;
+    margin-top: 4px;
     line-height: 1.45;
   }
-  .other-req-title { font-weight: 800; color: var(--theme-primary); margin-bottom: 2px; }
+  .other-req-title { font-weight: 800; color: var(--theme-primary); margin-bottom: 2px; display: flex; justify-content: space-between; align-items: center; }
 
   /* Modal */
   .modal-overlay {
@@ -387,10 +586,14 @@
 </header>
 
 <div class="container">
-  <!-- 0. Mode Switch (문과 / 이과 UI 색상 테마 전환) -->
+  <!-- 0. Mode Switch (문과 / 이과 UI 색상 테마 전환 + 문과 일종수/일종 전환) -->
   <div class="mode-switch-container">
     <div class="mode-title">
-      <span>전형 계열 </span>
+      <span>전형 계열 선택</span>
+      <div class="hum-submode-wrap" id="hum-submode-wrap">
+        <button class="hum-submode-btn active" id="btn-hum-3sub" onclick="setHumSubmode('일종수')">문과: 일종수 (800점) + 일종 병기</button>
+        <button class="hum-submode-btn" id="btn-hum-2sub" onclick="setHumSubmode('일종')">문과: 일종 (600점 · 수학제외) 중심 보기</button>
+      </div>
     </div>
     <div class="mode-btn-group">
       <button class="mode-btn active-humanities" id="btn-humanities" onclick="switchTheme('문과')"> 문과 전형 </button>
@@ -436,14 +639,19 @@
       <div class="kpi-sub">2025년 평균: 99.9점 (표준편차 30.2)</div>
     </div>
 
-    <div class="kpi-card">
+    <div class="kpi-card highlight">
       <div class="kpi-label">
-        <span>일종수 · 일이수</span>
+        <span id="kpi-tot-title">문과 총점 (기술 제외)</span>
         <span class="badge badge-theme" id="kpi-tier-badge">상위 MARCH·구제국권</span>
       </div>
-      <div>
-        <span class="kpi-value" id="kpi-tot800">660</span>
-        <span class="kpi-unit">/ 800점</span>
+      <div class="kpi-dual-row">
+        <div>
+          <span class="kpi-value" id="kpi-tot800">647</span>
+          <span class="kpi-unit" id="kpi-tot-unit">/ 800점 (일종수)</span>
+        </div>
+        <div class="kpi-secondary-box" id="kpi-sub-tot-box">
+          일종: <span id="kpi-tot600">497</span> / 600점
+        </div>
       </div>
       <div class="kpi-sub" id="kpi-wrt-sub">기술: 45점 / 50점 (일본어+기술: 385점)</div>
     </div>
@@ -459,10 +667,11 @@
     </div>
 
     <div class="presets">
-      <button class="preset-btn" onclick="applyPreset(10,12,3,12,15,50,195,190,120)">만점 (371점 / 상위 0.4%)</button>
-      <button class="preset-btn" onclick="applyPreset(9,12,2,11,14,45,188,180,100)">1등급대 (350점 / 상위 4%)</button>
-      <button class="preset-btn" onclick="applyPreset(9,10,2,10,13,40,170,150,80)">2등급대 (325점 / 상위 11%)</button>
-      <button class="preset-btn" onclick="applyPreset(8,9,1,9,11,35,150,125,65)">3등급대 (287점 / 상위 24%)</button>
+      <span class="preset-mode-tag" id="preset-mode-label">문과 기준 등급컷</span>
+      <button class="preset-btn" id="preset-btn-max" onclick="applyTrackPreset('max')">만점 (371점 / 상위 0.4%)</button>
+      <button class="preset-btn" id="preset-btn-1" onclick="applyTrackPreset('tier1')">1등급대 (350점 / 상위 4%)</button>
+      <button class="preset-btn" id="preset-btn-2" onclick="applyTrackPreset('tier2')">2등급대 (325점 / 상위 11%)</button>
+      <button class="preset-btn" id="preset-btn-3" onclick="applyTrackPreset('tier3')">3등급대 (287점 / 상위 24%)</button>
     </div>
 
     <div class="sliders-grid">
@@ -519,17 +728,60 @@
           <span class="slider-pill" id="val-wrt">45점</span>
         </div>
         <input type="range" id="sl-wrt" min="0" max="50" step="5" value="45" oninput="recalc()">
-        <div class="slider-info"><span>2025 평균 33.6점</span></div>
+        <div class="slider-info"><span>2025 평균 33.6점</span><span>기술제외 총점과 별도 집계</span></div>
       </div>
 
-      <!-- Other Subjects -->
-      <div class="slider-item">
+      <!-- Humanities Subject: 종합과목 -->
+      <div class="slider-item" id="card-hum-sub">
         <div class="slider-top">
           <span id="label-sub">종합과목 (200점)</span>
           <span class="slider-pill" id="val-sub">170점</span>
         </div>
         <input type="range" id="sl-sub" min="40" max="200" value="170" oninput="recalc()">
-        <div class="slider-info"><span id="hint-sub">2025 종과 평균 122점 / 최고 198점</span></div>
+        <div class="slider-info"><span id="hint-sub">2025 종과 평균 122점 / 최고 198점</span><span>일종·일종수 반영</span></div>
+      </div>
+
+      <!-- Science Subject 1 (이과 선택과목 1) -->
+      <div class="slider-item sci-special" id="card-sci-1" style="display:none;">
+        <div class="sci-combo-bar">
+          <button type="button" class="sci-combo-btn active" id="combo-pc" onclick="setSciCombo('물리','화학')">물리+화학 (공학·이학 표준)</button>
+          <button type="button" class="sci-combo-btn" id="combo-cb" onclick="setSciCombo('화학','생물')">화학+생물 (생명·농·약학)</button>
+          <button type="button" class="sci-combo-btn" id="combo-pb" onclick="setSciCombo('물리','생물')">물리+생물</button>
+        </div>
+        <div class="slider-top">
+          <span>이과 선택 1:
+            <select id="sel-sci1" class="sci-select" onchange="onSciSubjectChange(1)">
+              <option value="물리" selected>물리 (100점)</option>
+              <option value="화학">화학 (100점)</option>
+              <option value="생물">생물 (100점)</option>
+            </select>
+          </span>
+          <span class="slider-pill" id="val-sci1">85점</span>
+        </div>
+        <input type="range" id="sl-sci1" min="20" max="100" value="85" oninput="onSciSliderInput()">
+        <div class="slider-info">
+          <span id="hint-sci1">25년 물리 평균 50.8점 / 최고 99점</span>
+          <span>상위권 85~95+</span>
+        </div>
+      </div>
+
+      <!-- Science Subject 2 (이과 선택과목 2) -->
+      <div class="slider-item sci-special" id="card-sci-2" style="display:none;">
+        <div class="slider-top">
+          <span>이과 선택 2:
+            <select id="sel-sci2" class="sci-select" onchange="onSciSubjectChange(2)">
+              <option value="물리">물리 (100점)</option>
+              <option value="화학" selected>화학 (100점)</option>
+              <option value="생물">생물 (100점)</option>
+            </select>
+          </span>
+          <span class="slider-pill" id="val-sci2">85점</span>
+        </div>
+        <input type="range" id="sl-sci2" min="20" max="100" value="85" oninput="onSciSliderInput()">
+        <div class="slider-info">
+          <span id="hint-sci2">25년 화학 평균 53.6점 / 최고 100점</span>
+          <span id="sci-sum-badge" style="font-weight:800; color:var(--theme-primary);">2과목 합산: 170 / 200점</span>
+        </div>
       </div>
 
       <div class="slider-item">
@@ -557,7 +809,7 @@
     <div class="panel-header">
       <h2>
         <span>2. 대학 및 세부 학과별 실시간 합격 진단</span>
-        <span class="panel-instruction">대학을 클릭해 자세한 모집요강 및 실측 표본을 확인해보세요</span>
+        <span class="panel-instruction">일본어(400점)와 기술제외 총합(일종수·일이수·일종)에서 내 점수 위치를 바로 확인하세요</span>
       </h2>
     </div>
 
@@ -1909,15 +2161,62 @@ const DETAILED_UNIV_DB = [
   }
 ];
 
+const SCI_SUBJECT_META = {
+  '물리': '25년 물리 평균 50.8점 / 최고 99점',
+  '화학': '25년 화학 평균 53.6점 / 최고 100점',
+  '생물': '25년 생물 평균 57.1점 / 최고 99점'
+};
+
+// Track-specific presets (문과 vs 이과 1·2·3등급대 차등 설정)
+const TRACK_PRESETS = {
+  '문과': {
+    max:   { rs:10, rm:12, rl:3, cd:12, ck:15, wrt:50, sub:195, math:190, eng:120, label:'만점권 (문과: 일어 371 · 일종수 756 / 일종 566)' },
+    tier1: { rs:9,  rm:12, rl:2, cd:11, ck:14, wrt:45, sub:188, math:180, eng:100, label:'1등급대 (문과 상위 4%: 일어 350 · 종과 188 · 수1 180)' },
+    tier2: { rs:9,  rm:10, rl:2, cd:10, ck:13, wrt:40, sub:170, math:150, eng:80,  label:'2등급대 (문과 상위 11%: 일어 325 · 종과 170 · 수1 150)' },
+    tier3: { rs:8,  rm:9,  rl:1, cd:9,  ck:11, wrt:35, sub:150, math:125, eng:65,  label:'3등급대 (문과 상위 24%: 일어 287 · 종과 150 · 수1 125)' }
+  },
+  '이과': {
+    max:   { rs:10, rm:12, rl:3, cd:12, ck:15, wrt:50, sci1:98, sci2:97, math:198, eng:115, label:'만점권 (이과: 일어 371 · 이과 195 · 수2 198 · 일이수 764)' },
+    tier1: { rs:9,  rm:11, rl:2, cd:11, ck:13, wrt:45, sci1:92, sci2:90, math:188, eng:95,  label:'1등급대 (이과 상위 5%: 일어 338 · 이과 92+90 · 수2 188)' },
+    tier2: { rs:8,  rm:10, rl:2, cd:10, ck:12, wrt:40, sci1:84, sci2:80, math:170, eng:78,  label:'2등급대 (이과 상위 14%: 일어 311 · 이과 84+80 · 수2 170)' },
+    tier3: { rs:8,  rm:8,  rl:1, cd:8,  ck:11, wrt:35, sci1:70, sci2:68, math:142, eng:60,  label:'3등급대 (이과 상위 28%: 일어 273 · 이과 70+68 · 수2 142)' }
+  }
+};
+
 let currentMode = '문과';
+let humSubmode = '일종수'; // '일종수' (3과목 800점 기본) or '일종' (2과목 600점 중심)
 let currentGroup = 'all';
-let userScores = { r: 177, l: 150, j400: 327, j450: 372, tot800: 647, eng: 85 };
+let userScores = {
+  r: 177, l: 150, j400: 327, j450: 372,
+  sub: 170, sci1Name: '물리', sci1: 85, sci2Name: '화학', sci2: 85,
+  math: 150, tot800: 647, tot600: 497, eng: 85
+};
+
+function updatePresetButtonsUI() {
+  const p = TRACK_PRESETS[currentMode];
+  document.getElementById('preset-mode-label').textContent = currentMode === '이과' ? '이과 기준 등급컷' : '문과 기준 등급컷';
+  document.getElementById('preset-btn-max').textContent = p.max.label;
+  document.getElementById('preset-btn-1').textContent = p.tier1.label;
+  document.getElementById('preset-btn-2').textContent = p.tier2.label;
+  document.getElementById('preset-btn-3').textContent = p.tier3.label;
+}
+
+function setHumSubmode(submode) {
+  humSubmode = submode;
+  document.getElementById('btn-hum-3sub').className = submode === '일종수' ? 'hum-submode-btn active' : 'hum-submode-btn';
+  document.getElementById('btn-hum-2sub').className = submode === '일종' ? 'hum-submode-btn active' : 'hum-submode-btn';
+  recalc();
+}
 
 function switchTheme(mode) {
   currentMode = mode;
   const body = document.body;
   const btnH = document.getElementById('btn-humanities');
   const btnS = document.getElementById('btn-science');
+  const humWrap = document.getElementById('hum-submode-wrap');
+  const cardHumSub = document.getElementById('card-hum-sub');
+  const cardSci1 = document.getElementById('card-sci-1');
+  const cardSci2 = document.getElementById('card-sci-2');
   const labelSub = document.getElementById('label-sub');
   const hintSub = document.getElementById('hint-sub');
   const labelMath = document.getElementById('label-math');
@@ -1927,19 +2226,69 @@ function switchTheme(mode) {
     body.className = 'theme-science';
     btnH.className = 'mode-btn';
     btnS.className = 'mode-btn active-science';
+    humWrap.style.display = 'none';
+    cardHumSub.style.display = 'none';
+    cardSci1.style.display = 'block';
+    cardSci2.style.display = 'block';
     labelSub.textContent = '이과 2과목 (물·화·생 200점)';
     hintSub.textContent = '2025 물·화 합산 평균 약 105점 / 상위권 160+';
     labelMath.textContent = '수학 코스2 (200점)';
     hintMath.textContent = '2025 수2 평균 111점 / 상위권 165+';
+    onSciSliderInput();
   } else {
     body.className = 'theme-humanities';
     btnH.className = 'mode-btn active-humanities';
     btnS.className = 'mode-btn';
+    humWrap.style.display = 'inline-flex';
+    cardHumSub.style.display = 'block';
+    cardSci1.style.display = 'none';
+    cardSci2.style.display = 'none';
     labelSub.textContent = '종합과목 (200점)';
     hintSub.textContent = '2025 종과 평균 122점 / 최고 198점';
     labelMath.textContent = '수학 코스1 (200점)';
     hintMath.textContent = '2025 수1 평균 97.5점 / 최고 193점';
   }
+  updatePresetButtonsUI();
+  recalc();
+}
+
+function syncSciComboButtons() {
+  const s1 = document.getElementById('sel-sci1').value;
+  const s2 = document.getElementById('sel-sci2').value;
+  const pair = [s1, s2].sort().join('+');
+  document.getElementById('combo-pc').className = (pair === '물리+화학') ? 'sci-combo-btn active' : 'sci-combo-btn';
+  document.getElementById('combo-cb').className = (pair === '생물+화학') ? 'sci-combo-btn active' : 'sci-combo-btn';
+  document.getElementById('combo-pb').className = (pair === '물리+생물') ? 'sci-combo-btn active' : 'sci-combo-btn';
+}
+
+function setSciCombo(sub1, sub2) {
+  document.getElementById('sel-sci1').value = sub1;
+  document.getElementById('sel-sci2').value = sub2;
+  document.getElementById('hint-sci1').textContent = SCI_SUBJECT_META[sub1];
+  document.getElementById('hint-sci2').textContent = SCI_SUBJECT_META[sub2];
+  syncSciComboButtons();
+  recalc();
+}
+
+function onSciSubjectChange(which) {
+  const sel1 = document.getElementById('sel-sci1');
+  const sel2 = document.getElementById('sel-sci2');
+  const all = ['물리', '화학', '생물'];
+  if (sel1.value === sel2.value) {
+    const remaining = all.find(s => s !== sel1.value);
+    if (which === 1) sel2.value = remaining;
+    else sel1.value = remaining;
+  }
+  document.getElementById('hint-sci1').textContent = SCI_SUBJECT_META[sel1.value];
+  document.getElementById('hint-sci2').textContent = SCI_SUBJECT_META[sel2.value];
+  syncSciComboButtons();
+  recalc();
+}
+
+function onSciSliderInput() {
+  const s1 = +document.getElementById('sl-sci1').value;
+  const s2 = +document.getElementById('sl-sci2').value;
+  document.getElementById('sl-sub').value = s1 + s2;
   recalc();
 }
 
@@ -1972,7 +2321,17 @@ function calcScores() {
   const cd = +document.getElementById('sl-cd').value;
   const ck = +document.getElementById('sl-ck').value;
   const wrt = +document.getElementById('sl-wrt').value;
-  const sub = +document.getElementById('sl-sub').value;
+  const sci1Name = document.getElementById('sel-sci1').value;
+  const sci2Name = document.getElementById('sel-sci2').value;
+  const sci1 = +document.getElementById('sl-sci1').value;
+  const sci2 = +document.getElementById('sl-sci2').value;
+
+  let sub = +document.getElementById('sl-sub').value;
+  if (currentMode === '이과') {
+    sub = sci1 + sci2;
+    document.getElementById('sl-sub').value = sub;
+  }
+
   const math = +document.getElementById('sl-math').value;
   const eng = +document.getElementById('sl-eng').value;
 
@@ -2000,7 +2359,8 @@ function calcScores() {
 
   const j400 = scoreR + scoreL;
   const j450 = j400 + wrt;
-  const tot800 = j400 + sub + math;
+  const tot800 = j400 + sub + math; // 일종수 / 일이수 (기술제외 800점 만점)
+  const tot600 = j400 + sub;        // 일종 / 일이 (기술제외 600점 만점)
 
   document.getElementById('val-rs').textContent = `${rs}개 (-${wrs})`;
   document.getElementById('val-rm').textContent = `${rm}개 (-${wrm})`;
@@ -2009,6 +2369,9 @@ function calcScores() {
   document.getElementById('val-ck').textContent = `${ck}개 (-${wck})`;
   document.getElementById('val-wrt').textContent = `${wrt}점`;
   document.getElementById('val-sub').textContent = `${sub}점`;
+  document.getElementById('val-sci1').textContent = `${sci1}점`;
+  document.getElementById('val-sci2').textContent = `${sci2}점`;
+  document.getElementById('sci-sum-badge').textContent = `2과목 합산: ${sci1 + sci2} / 200점`;
   document.getElementById('val-math').textContent = `${math}점`;
   document.getElementById('val-eng').textContent = `${eng}점`;
 
@@ -2018,14 +2381,52 @@ function calcScores() {
   document.getElementById('kpi-r-badge').textContent = `${rs+rm+rl}/25문항`;
   document.getElementById('kpi-listen').textContent = scoreL;
   document.getElementById('kpi-l-badge').textContent = `${cd+ck}/27문항`;
-  document.getElementById('kpi-tot800').textContent = tot800;
-  document.getElementById('kpi-wrt-sub').textContent = `기술: ${wrt}점 / 50점 (일본어+기술: ${j450}점)`;
+
+  // Update 4th KPI card depending on mode & humSubmode
+  const kpiTotTitle = document.getElementById('kpi-tot-title');
+  const kpiTotVal = document.getElementById('kpi-tot800');
+  const kpiTotUnit = document.getElementById('kpi-tot-unit');
+  const kpiSubBox = document.getElementById('kpi-sub-tot-box');
+  const kpiWrtSub = document.getElementById('kpi-wrt-sub');
+
+  if (currentMode === '문과') {
+    if (humSubmode === '일종') {
+      kpiTotTitle.textContent = '문과 일종 · 일종수 (기술 제외)';
+      kpiTotVal.textContent = tot600;
+      kpiTotUnit.textContent = '/ 600점 (일종)';
+      kpiSubBox.innerHTML = `일종수: <span id="kpi-tot600">${tot800}</span> / 800점`;
+    } else {
+      kpiTotTitle.textContent = '문과 일종수 · 일종 (기술 제외)';
+      kpiTotVal.textContent = tot800;
+      kpiTotUnit.textContent = '/ 800점 (일종수)';
+      kpiSubBox.innerHTML = `일종: <span id="kpi-tot600">${tot600}</span> / 600점`;
+    }
+    kpiWrtSub.textContent = `기술: ${wrt}점 (일어+기술: ${j450}점 | 일종+기술: ${tot600+wrt}점)`;
+  } else {
+    kpiTotTitle.textContent = '이과 일이수 (기술 제외)';
+    kpiTotVal.textContent = tot800;
+    kpiTotUnit.textContent = '/ 800점 (일이수)';
+    kpiSubBox.innerHTML = `${sci1Name} ${sci1} + ${sci2Name} ${sci2} = <span id="kpi-tot600">${sub}</span>/200`;
+    kpiWrtSub.textContent = `기술: ${wrt}점 / 50점 (일본어+기술: ${j450}점 | 일이수+기술: ${tot800+wrt}점)`;
+  }
 
   const pct = j400>=370?'상위 0.4%':j400>=360?'상위 1.5%':j400>=350?'상위 3.5%':j400>=340?'상위 6.0%':j400>=330?'상위 8.9%':j400>=320?'상위 11.7%':j400>=300?'상위 18.2%':j400>=280?'상위 24.8%':j400>=260?'상위 33.1%':j400>=235?'상위 47%':'평균 미만';
   document.getElementById('kpi-pct').textContent = pct;
-  document.getElementById('kpi-tier-badge').textContent = j400>=360?'동경일공 도전':j400>=350?'구제국·소케이·상위MARCH':j400>=318?'MARCH·칸칸도리츠':j400>=285?'닛토·산킨·4공대':'중견사립·미대';
 
-  userScores = { r: scoreR, l: scoreL, j400, j450, tot800, eng };
+  if (currentMode === '이과') {
+    document.getElementById('kpi-tier-badge').textContent = tot800>=705?'동경일공·구제국·조케이':tot800>=675?'구제국·도쿄이과·상위사립':tot800>=625?'MARCH·칸칸도리츠·시바우라':tot800>=555?'4공대·닛토코마센':'중견이공·전문대';
+  } else {
+    document.getElementById('kpi-tier-badge').textContent = j400>=360?'동경일공·조케이 도전':j400>=348?'구제국·소케이·상위MARCH':j400>=318?'MARCH·칸칸도리츠':j400>=285?'닛토·산킨·중견사립':'중견사립·미대';
+  }
+
+  userScores = { r: scoreR, l: scoreL, j400, j450, sub, sci1Name, sci1, sci2Name, sci2, math, tot800, tot600, eng };
+}
+
+// Helper to estimate 2-subject (일종: 일본어+종합과목, 600점 만점) safe cutoff for Humanities departments
+function getIljongCut(item) {
+  const m = item.otherReqText.match(/종합과목\s*(\d+)/) || item.otherReqText.match(/종과\s*(\d+)/);
+  const recSub = m ? parseInt(m[1], 10) : Math.round((item.totCut - item.safeJ) * 0.52);
+  return Math.min(570, item.safeJ + recSub);
 }
 
 function renderUnivCards() {
@@ -2035,9 +2436,20 @@ function renderUnivCards() {
   const selectedField = document.getElementById('select-dept-field').value;
   const selectedStatus = document.getElementById('select-status').value;
 
-  const minScale = 180, maxScale = 375;
-  const toPct = v => Math.max(0, Math.min(100, ((v - minScale) / (maxScale - minScale)) * 100));
-  const userPos = toPct(userScores.j400);
+  // Scale for Japanese 400pt bar
+  const minScaleJ = 190, maxScaleJ = 375;
+  const toPctJ = v => Math.max(2, Math.min(98, ((v - minScaleJ) / (maxScaleJ - minScaleJ)) * 100));
+  const userPosJ = toPctJ(userScores.j400);
+
+  // Scale for 3-subject Total 800pt bar (일종수 / 일이수)
+  const minScaleTot = 420, maxScaleTot = 770;
+  const toPctTot = v => Math.max(2, Math.min(98, ((v - minScaleTot) / (maxScaleTot - minScaleTot)) * 100));
+  const userPosTot = toPctTot(userScores.tot800);
+
+  // Scale for 2-subject 600pt bar (문과 일종)
+  const minScale600 = 330, maxScale600 = 580;
+  const toPct600 = v => Math.max(2, Math.min(98, ((v - minScale600) / (maxScale600 - minScale600)) * 100));
+  const userPos600 = toPct600(userScores.tot600);
 
   let html = '';
   let count = 0;
@@ -2054,7 +2466,7 @@ function renderUnivCards() {
     // Search query
     if (q && !(item.univ.toLowerCase().includes(q) || item.dept.toLowerCase().includes(q) || item.otherReqText.toLowerCase().includes(q))) return;
 
-    // Status check
+    // 1. Japanese Score Status
     let jStatus = 'up', jLabel = '일어 부족', jBadge = 'badge-red';
     if (userScores.j400 >= item.safeJ) {
       jStatus = 'safe'; jLabel = '일어: 안정권'; jBadge = 'badge-green';
@@ -2065,17 +2477,116 @@ function renderUnivCards() {
     if (selectedStatus === 'safe' && jStatus !== 'safe') return;
     if (selectedStatus === 'comp' && jStatus !== 'comp') return;
 
-    // 3-Subject check
-    let totLabel = `3과목컷(${item.totCut}): 부족`, totBadge = 'badge-red';
-    if (userScores.tot800 >= item.totCut + 15) {
-      totLabel = `3과목(${item.totCut}+): 안정`; totBadge = 'badge-green';
-    } else if (userScores.tot800 >= item.totCut - 10) {
-      totLabel = `3과목(${item.totCut}): 경합`; totBadge = 'badge-amber';
+    const diffJ = userScores.j400 - item.safeJ;
+    const diffJStr = diffJ >= 0 ? `안정선 +${diffJ}점 여유` : `안정선 ${diffJ}점 부족`;
+    const lMinJ = toPctJ(item.minJ), lSafeJ = toPctJ(item.safeJ), lMaxJ = toPctJ(item.maxJ);
+
+    // 2. Total Score (일종수 / 일이수 / 일종) Status & Bar
+    const isArt = item.track === '예체능';
+    const iljongCut = getIljongCut(item);
+    const diffTot800 = userScores.tot800 - item.totCut;
+    const diffTot800Str = diffTot800 >= 0 ? `+${diffTot800}점 여유` : `${diffTot800}점 부족`;
+    const diffIljong = userScores.tot600 - iljongCut;
+    const diffIljongStr = diffIljong >= 0 ? `+${diffIljong}점 여유` : `${diffIljong}점 부족`;
+
+    let totLabel = '', totBadge = 'badge-red';
+    if (currentMode === '문과' && humSubmode === '일종' && !isArt) {
+      if (userScores.tot600 >= iljongCut + 8) {
+        totLabel = `일종(${iljongCut}+): 안정`; totBadge = 'badge-green';
+      } else if (userScores.tot600 >= iljongCut - 12) {
+        totLabel = `일종(${iljongCut}): 경합`; totBadge = 'badge-amber';
+      } else {
+        totLabel = `일종(${iljongCut}): 부족`; totBadge = 'badge-red';
+      }
+    } else {
+      const prefix = isArt ? '합산컷' : (currentMode === '이과' ? '일이수' : '일종수');
+      if (userScores.tot800 >= item.totCut + 10) {
+        totLabel = `${prefix}(${item.totCut}+): 안정`; totBadge = 'badge-green';
+      } else if (userScores.tot800 >= item.totCut - 15) {
+        totLabel = `${prefix}(${item.totCut}): 경합`; totBadge = 'badge-amber';
+      } else {
+        totLabel = `${prefix}(${item.totCut}): 부족`; totBadge = 'badge-red';
+      }
     }
 
-    const diff = userScores.j400 - item.safeJ;
-    const diffStr = diff >= 0 ? `+${diff}점 여유` : `${diff}점 부족`;
-    const lMin = toPct(item.minJ), lSafe = toPct(item.safeJ), lMax = toPct(item.maxJ);
+    // Build second gauge bar (기술제외 3과목 총합 일종수/일이수 + 문과 일종 지원)
+    let secondGaugeHtml = '';
+    if (currentMode === '문과' && humSubmode === '일종' && !isArt) {
+      const min600 = iljongCut - 20;
+      const max600 = Math.min(570, iljongCut + 28);
+      const lMin600 = toPct600(min600), lSafe600 = toPct600(iljongCut), lMax600 = toPct600(max600);
+      secondGaugeHtml = `
+        <div class="diag-gauge-box tot-box">
+          <div class="diag-gauge-header">
+            <span class="diag-gauge-title">일종 총합 (기술·수학제외 600점)</span>
+            <span class="diag-my-score-pill">내 일종: ${userScores.tot600}점 (${diffIljongStr})</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-range" style="left:${lMin600}%; width:${Math.max(2, lMax600 - lMin600)}%;"></div>
+            <div class="bar-safe" style="left:${lSafe600}%; width:${Math.max(2, lMax600 - lSafe600)}%;"></div>
+            <div class="bar-cut-tick" style="left:${lSafe600}%;" title="일종 안정컷: ${iljongCut}점"></div>
+            <div class="bar-user" style="left:${userPos600}%;">
+              <span class="bar-user-pin">내 점수 ${userScores.tot600}</span>
+            </div>
+          </div>
+          <div class="score-indicators">
+            <span>경합권: <strong>${min600}점~</strong></span>
+            <span>일종 안정선: <strong style="color:var(--theme-accent);">${iljongCut}점+</strong></span>
+            <span>상위권: <strong>${max600}점</strong></span>
+          </div>
+          <div class="iljong-sub-row">
+            <span><strong>일종수 (3과목 800점):</strong> 내 점수 <b>${userScores.tot800}점</b></span>
+            <span>3과목 기준컷 <b>${item.totCut}점</b> (${diffTot800Str})</span>
+          </div>
+        </div>
+      `;
+    } else {
+      const totMin = item.totCut - 20;
+      const totMax = Math.min(765, item.totCut + 35);
+      const lMinT = toPctTot(totMin), lSafeT = toPctTot(item.totCut), lMaxT = toPctTot(totMax);
+      const totTitle = isArt ? '실기·일어 합산 기준 (기술제외)' : (currentMode === '이과' ? '일이수 3과목 총합 (기술제외 800점)' : '일종수 3과목 총합 (기술제외 800점)');
+      const myTotTitle = isArt ? '내 합산' : (currentMode === '이과' ? '내 일이수' : '내 일종수');
+
+      let subRowHtml = '';
+      if (currentMode === '문과' && !isArt) {
+        subRowHtml = `
+          <div class="iljong-sub-row">
+            <span><strong>일종 (일어+종과 600점):</strong> 내 점수 <b style="color:var(--theme-primary);">${userScores.tot600}점</b></span>
+            <span>권장 안정선 <b>${iljongCut}점+</b> (${diffIljongStr})</span>
+          </div>
+        `;
+      } else if (currentMode === '이과' && !isArt) {
+        subRowHtml = `
+          <div class="iljong-sub-row">
+            <span><strong>내 이과 선택:</strong> ${userScores.sci1Name} <b>${userScores.sci1}</b> + ${userScores.sci2Name} <b>${userScores.sci2}</b> (합 <b>${userScores.sub}점</b>)</span>
+            <span>수학2: <b>${userScores.math}점</b></span>
+          </div>
+        `;
+      }
+
+      secondGaugeHtml = `
+        <div class="diag-gauge-box tot-box">
+          <div class="diag-gauge-header">
+            <span class="diag-gauge-title">${totTitle}</span>
+            <span class="diag-my-score-pill">${myTotTitle}: ${userScores.tot800}점 (${diffTot800Str})</span>
+          </div>
+          <div class="bar-track">
+            <div class="bar-range" style="left:${lMinT}%; width:${Math.max(2, lMaxT - lMinT)}%;"></div>
+            <div class="bar-safe" style="left:${lSafeT}%; width:${Math.max(2, lMaxT - lSafeT)}%;"></div>
+            <div class="bar-cut-tick" style="left:${lSafeT}%;" title="3과목 안정컷: ${item.totCut}점"></div>
+            <div class="bar-user" style="left:${userPosTot}%;">
+              <span class="bar-user-pin">내 총합 ${userScores.tot800}</span>
+            </div>
+          </div>
+          <div class="score-indicators">
+            <span>경합 시작: <strong>${totMin}점</strong></span>
+            <span>3과목 안정컷: <strong style="color:var(--theme-accent); font-size:0.8rem;">${item.totCut}점+</strong></span>
+            <span>상위 합격권: <strong>${totMax}점</strong></span>
+          </div>
+          ${subRowHtml}
+        </div>
+      `;
+    }
 
     count++;
     html += `
@@ -2092,21 +2603,36 @@ function renderUnivCards() {
             </div>
           </div>
 
-          <div class="bar-track">
-            <div class="bar-range" style="left:${lMin}%; width:${Math.max(2, lMax - lMin)}%;"></div>
-            <div class="bar-safe" style="left:${lSafe}%; width:${Math.max(2, lMax - lSafe)}%;"></div>
-            <div class="bar-user" style="left:${userPos}%;" title="내 일본어 점수: ${userScores.j400}점"></div>
+          <!-- Gauge 1: Japanese Score (400pt) -->
+          <div class="diag-gauge-box">
+            <div class="diag-gauge-header">
+              <span class="diag-gauge-title">일본어 (기술제외 400점)</span>
+              <span class="diag-my-score-pill">내 일어: ${userScores.j400}점 (${diffJStr})</span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-range" style="left:${lMinJ}%; width:${Math.max(2, lMaxJ - lMinJ)}%;"></div>
+              <div class="bar-safe" style="left:${lSafeJ}%; width:${Math.max(2, lMaxJ - lSafeJ)}%;"></div>
+              <div class="bar-cut-tick" style="left:${lSafeJ}%;" title="안정합격선: ${item.safeJ}점"></div>
+              <div class="bar-user" style="left:${userPosJ}%;" title="내 일본어 점수: ${userScores.j400}점">
+                <span class="bar-user-pin">내 점수 ${userScores.j400}</span>
+              </div>
+            </div>
+            <div class="score-indicators">
+              <span>서류최저: <strong>${item.minJ}점</strong></span>
+              <span>안정합격선: <strong style="color:var(--theme-accent); font-size:0.8rem;">${item.safeJ}점</strong></span>
+              <span>최고표본: <strong>${item.maxJ}점</strong></span>
+            </div>
           </div>
 
-          <div class="score-indicators">
-            <span>서류최저: <strong>${item.minJ}</strong></span>
-            <span>안정합격선: <strong style="color:var(--theme-accent); font-size:0.82rem;">${item.safeJ}점</strong></span>
-            <span>(${diffStr})</span>
-          </div>
+          <!-- Gauge 2: 3-Subject Total (일종수/일이수 800pt) & Humanities 일종 (600pt) -->
+          ${secondGaugeHtml}
         </div>
 
         <div class="other-req-box">
-          <div class="other-req-title">일본어 외 과목 기준점:</div>
+          <div class="other-req-title">
+            <span>일본어 외 과목 권장 기준:</span>
+            <span>내 영어(TOEFL): ${userScores.eng}점</span>
+          </div>
           <div>${item.otherReqText || '해당 전형 상세 요강 참조'}</div>
         </div>
       </div>
@@ -2130,20 +2656,28 @@ function openModal(id) {
   const item = DETAILED_UNIV_DB.find(u => u.id === id);
   if (!item) return;
 
+  const iljongCut = getIljongCut(item);
   document.getElementById('modal-title').textContent = `${item.univ} ${item.dept}`;
   document.getElementById('modal-subtitle').textContent = `계열: ${item.track} (${item.field}계열) | 목표 티어 구분: ${item.group}`;
   
+  const extraTrackLine = item.track === '문과'
+    ? `<li><strong>문과 일종(일본어+종과 600점) 권장선:</strong> <b>${iljongCut}점 이상</b> (현재 내 일종 점수: <b>${userScores.tot600}점</b> / 내 일종수: <b>${userScores.tot800}점</b>)</li>`
+    : item.track === '이과'
+    ? `<li><strong>내 이과 선택과목 현황:</strong> ${userScores.sci1Name} <b>${userScores.sci1}점</b> + ${userScores.sci2Name} <b>${userScores.sci2}점</b> = 합산 <b>${userScores.sub}점</b> (현재 내 일이수: <b>${userScores.tot800}점</b>)</li>`
+    : '';
+
   document.getElementById('modal-req').innerHTML = `
     <ul style="padding-left:18px; line-height:1.6;">
-      <li><strong>일본어 요구선:</strong> 서류 최저컷 <b>${item.minJ}점</b> / 안정 합격선 <b>${item.safeJ}점</b> (최고 ${item.maxJ}점)</li>
+      <li><strong>일본어 요구선 (기술 제외):</strong> 서류 최저컷 <b>${item.minJ}점</b> / 안정 합격선 <b>${item.safeJ}점</b> (최고 ${item.maxJ}점) — <b>내 점수: ${userScores.j400}점</b></li>
       <li><strong>일본어 외 과목 기준:</strong> ${item.otherReqText}</li>
-      <li><strong>3과목 종합 커트라인:</strong> ${item.totCut}점 이상 (일본어 + 종과/이과 + 수학 800점 만점 기준)</li>
+      <li><strong>3과목 종합 커트라인 (기술 제외):</strong> <b>${item.totCut}점 이상</b> (일본어 + 종과/이과 + 수학 800점 만점 기준)</li>
+      ${extraTrackLine}
     </ul>
   `;
 
   document.getElementById('modal-cut').innerHTML = `
     <p style="color:#334155; line-height:1.6;">
-      중국 대형 학원가(行知·名校·启程) 빅데이터 분석에 따르면, 본 학과는 일본어 <b>${item.safeJ}점 이상</b>일 때 1차 서류 탈락 위험이 극히 낮으며, 
+      중국 대형 학원가(行知·名校·启程) 빅데이터 분석에 따르면, 본 학과는 일본어 <b>${item.safeJ}점 이상</b> 및 3과목 총합(기술제외) <b>${item.totCut}점 이상</b>일 때 1차 서류 탈락 위험이 극히 낮으며, 
       일본어가 다소 부족(${item.minJ}~${item.safeJ}점)하더라도 <b>${item.otherReqText.split('/')[0] || '타 과목'}</b>에서 고득점을 확보하면 최종 합격이 가능합니다.
     </p>
   `;
@@ -2179,8 +2713,34 @@ function applyPreset(rs, rm, rl, cd, ck, wrt, sub, math, eng) {
   document.getElementById('sl-ck').value = ck;
   document.getElementById('sl-wrt').value = wrt;
   document.getElementById('sl-sub').value = sub;
+  const half1 = Math.min(100, Math.ceil(sub / 2));
+  const half2 = Math.max(20, sub - half1);
+  document.getElementById('sl-sci1').value = half1;
+  document.getElementById('sl-sci2').value = half2;
   document.getElementById('sl-math').value = math;
   document.getElementById('sl-eng').value = eng;
+  recalc();
+}
+
+function applyTrackPreset(tierKey) {
+  const preset = TRACK_PRESETS[currentMode][tierKey];
+  if (!preset) return;
+  document.getElementById('sl-rs').value = preset.rs;
+  document.getElementById('sl-rm').value = preset.rm;
+  document.getElementById('sl-rl').value = preset.rl;
+  document.getElementById('sl-cd').value = preset.cd;
+  document.getElementById('sl-ck').value = preset.ck;
+  document.getElementById('sl-wrt').value = preset.wrt;
+  document.getElementById('sl-math').value = preset.math;
+  document.getElementById('sl-eng').value = preset.eng;
+
+  if (currentMode === '이과') {
+    document.getElementById('sl-sci1').value = preset.sci1;
+    document.getElementById('sl-sci2').value = preset.sci2;
+    document.getElementById('sl-sub').value = preset.sci1 + preset.sci2;
+  } else {
+    document.getElementById('sl-sub').value = preset.sub;
+  }
   recalc();
 }
 
@@ -2191,6 +2751,7 @@ function recalc() {
 
 window.addEventListener('DOMContentLoaded', () => {
   initUnivDropdown();
+  updatePresetButtonsUI();
   recalc();
 });
 </script>
